@@ -100,7 +100,6 @@ class Generator(nn.Module):
         x3 = self.conv3(x3)
         if self.debug: print(f"conv 3 : {x3.shape}")
         
-        torch.cuda.empty_cache()
         ##### sampler #####
         outputs = []
         noises = []
@@ -148,15 +147,13 @@ class SpatialDiscriminator(nn.Module):
                 DBlock(192 * 4, 192 * 4, downsample=False) # 768 -> 768, no downsample no * 4
                 ])
         self.linear = nn.Sequential(
-                nn.utils.spectral_norm(nn.Linear(768, 1)),
-                nn.BatchNorm1d(1)
+                nn.BatchNorm1d(768),
+                nn.utils.spectral_norm(nn.Linear(768, 1))
                 )
-        self.sigmoid = nn.Sequential(
-                #nn.ReLU(),
-                nn.Sigmoid()
-                )
+        self.activation = nn.Tanh()
 
     def forward(self, x):
+        x = x.unsqueeze(2)
         B, N, C, H, W = x.shape # batch_size, total_frames, channel=1, height, width
         indices = random.sample(range(N), self.n_frame)
         x = x[:, indices, :, :, :]
@@ -185,8 +182,19 @@ class SpatialDiscriminator(nn.Module):
         x = torch.sum(x, dim=1)
         if self.debug: print(f"Sum up : {x.shape}")
 
-        x = self.sigmoid(x)
+        #x = self.activation(x)
         return x
+
+def RandomCrop(x, size=128, padding=False):
+    B, C, H, W = x.shape
+    if not padding:
+        h_idx = random.randint(0, H-size)
+        w_idx = random.randint(0, W-size)
+        x = x[:, :, h_idx:h_idx+size, w_idx:w_idx+size]
+    else:
+        # TODO: add padding=True method
+        pass
+    return x
 
 class TemporalDiscriminator(nn.Module):
     def __init__(self, factor=2, size=128, debug=False):
@@ -195,9 +203,7 @@ class TemporalDiscriminator(nn.Module):
         self.factor = factor
         self.size = size
 
-        self.random_crop = nn.Sequential(
-                transforms.RandomCrop(size)
-                )
+        self.random_crop = RandomCrop
         self.d3_blocks = nn.ModuleList([
                 D3Block(4, 3 * 4, relu=False, downsample=True), # C: 4 -> 48, T -> T/2
                 D3Block(12 * 4, 6 * 4, downsample=True) # C: 48 -> 96, T/2 -> T/4 (not exactly the same as DGMR)
@@ -209,20 +215,17 @@ class TemporalDiscriminator(nn.Module):
                 DBlock(192 * 4, 192 * 4, downsample=False) # 768 -> 768, no downsample no * 4
                 ])
         self.linear = nn.Sequential(
-                nn.utils.spectral_norm(nn.Linear(768, 1)),
-                nn.BatchNorm1d(1)
+                nn.BatchNorm1d(768),
+                nn.utils.spectral_norm(nn.Linear(768, 1))
                 )
-        self.sigmoid = nn.Sequential(
-                #nn.ReLU(),
-                nn.Sigmoid()
-                )
+        self.activation = nn.Tanh()
 
     def forward(self, x):
+        x = self.random_crop(x, size=128).to(x.device)
+        x = x.unsqueeze(1)
         B, C, T, H, W = x.shape
         
         x = x.permute(0, 2, 1, 3, 4).view(B*T, C, H, W) # -> B, T, C, H, W
-        
-        x = self.random_crop(x)
         if self.debug: print(f"Cropped : {x.shape}")
         
         x = space2depth(x) # B*T, C, H, W
@@ -254,16 +257,16 @@ class TemporalDiscriminator(nn.Module):
         x = torch.sum(x, dim=1)
         if self.debug: print(f"Sum up : {x.shape}")
 
-        x = self.sigmoid(x)
+        #x = self.activation(x)
 
         return x
 
 
 if __name__ == "__main__":
-    device = torch.device("cpu")
+    device = torch.device("cuda")
     model = TemporalDiscriminator()
     model.to(device)
-    test = torch.randn(16, 1, 22, 256, 256).to(device)
+    test = torch.randn(800, 1, 22, 256, 256).to(device)
     out = model(test)
     print(out.shape)
 
