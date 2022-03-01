@@ -62,7 +62,7 @@ class ConvGRUCell(nn.Module):
 class SpatialAttention(nn.Module):
     """
     DGMR from DeepMind
-    Spatial attention module: for latent conditioning stack, the structure is questionable
+    Spatial attention module: for latent conditioning stack
     """
     def __init__(self, in_channels=192, out_channels=192, ratio_kq=8, ratio_v=8, kernel_size=3):
         super(SpatialAttention, self).__init__()
