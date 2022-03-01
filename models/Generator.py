@@ -9,8 +9,6 @@ from layers.LatentStack import LBlock, SpatialAttention
 
 from utils.utils import space2depth
 
-prints = lambda tensor_list: print([x.shape for x in tensor_list])
-
 class Generator(nn.Module):
     def __init__(self, in_step, out_step, debug=False):
         super(Generator, self).__init__()

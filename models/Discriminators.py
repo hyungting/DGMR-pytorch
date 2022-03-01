@@ -5,8 +5,6 @@ import torch.nn as nn
 from layers.DBlock import DBlock, D3Block
 from utils.utils import random_crop, space2depth
 
-prints = lambda tensor_list: print([x.shape for x in tensor_list])
-
 class SpatialDiscriminator(nn.Module):
     def __init__(self, n_frame=8, factor=2, debug=False):
         super(SpatialDiscriminator, self).__init__()
