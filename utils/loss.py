@@ -13,7 +13,10 @@ def Regularizer(pred, target, alpha=20):
     B, N, H, W = pred.shape
     difference = torch.abs(pred - target)
     # 24mm/h -> 45dbz
-    weight = torch.clip(target, min=0.5, max=45)
+    #map = 45 * torch.ones(target.shape, device=pred.device)
+    #map = torch.cat((target, map), dim=1)
+    #weight, _ = torch.max(map, keepdim=True, dim=1)
+    weight = torch.clamp(target, min=0, max=45)
     loss = difference * weight
     return alpha * loss.mean()
 
@@ -47,7 +50,7 @@ class LaplacianPyramidLoss(nn.Module):
 
     def conv_gauss(self, x):
         weights = self.make_gauss_kernel()
-        weights = weights.view(1, 1, self.kernel_size, self.kernel_size)#.repeat(1, 1, 1, 1)
+        weights = weights.view(1, 1, self.kernel_size, self.kernel_size)
         weights = weights.to(x.device)
         result = x
         for r in range(self.repeat):
@@ -78,7 +81,7 @@ class LaplacianPyramidLoss(nn.Module):
         return loss
 
 if __name__ == "__main__":
-    loss = LaplacianPyramidLoss()
+    loss = Regularizer
     x = torch.randn(16, 4, 256, 256)
     y = torch.randn(16, 4, 256, 256)
     out = loss(x, y)

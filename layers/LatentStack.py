@@ -14,10 +14,10 @@ class SpatialAttention(nn.Module):
         super(SpatialAttention, self).__init__()
         self.ratio_kq = ratio_kq
         self.ratio_v = ratio_v
-        self.conv_q = nn.Conv2d(in_channels, out_channels//ratio_kq, 1, 1, 0)
-        self.conv_k = nn.Conv2d(in_channels, out_channels//ratio_kq, 1, 1, 0)
-        self.conv_v = nn.Conv2d(in_channels, out_channels//ratio_v, 1, 1, 0)
-        self.conv_out = nn.Conv2d(out_channels//ratio_v, out_channels, 1, 1, 0)
+        self.conv_q = nn.Conv2d(in_channels, out_channels//ratio_kq, 1, 1, 0, bias=False)
+        self.conv_k = nn.Conv2d(in_channels, out_channels//ratio_kq, 1, 1, 0, bias=False)
+        self.conv_v = nn.Conv2d(in_channels, out_channels//ratio_v, 1, 1, 0, bias=False)
+        self.conv_out = nn.Conv2d(out_channels//ratio_v, out_channels, 1, 1, 0, bias=False)
     
     def einsum(self, q, k, v):
         # org shape = B, C, H, W

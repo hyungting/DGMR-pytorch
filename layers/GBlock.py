@@ -5,6 +5,7 @@ https://arxiv.org/abs/2104.00954
 
 import torch
 import torch.nn as nn
+from torch.nn.utils.parametrizations import spectral_norm
 
 from utils.utils import Identity, depth2space
 
@@ -17,14 +18,14 @@ class GBlockCell(nn.Module):
                 nn.BatchNorm2d(in_channels),
                 nn.ReLU(inplace=True),
                 Scaling(scale_factor=2),
-                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, in_channels, 3, 1, 1)),
+                spectral_norm(nn.Conv2d(in_channels, in_channels, 3, 1, 1, bias=False), eps=1e-4),
                 nn.BatchNorm2d(in_channels),
                 nn.ReLU(inplace=True),
-                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, out_channels, 3, 1, 1))
+                spectral_norm(nn.Conv2d(in_channels, out_channels, 3, 1, 1), eps=1e-4)
                 )
         self.conv1x1 = nn.Sequential(
             Scaling(scale_factor=2),
-            nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, out_channels, 1, 1, 0))
+            spectral_norm(nn.Conv2d(in_channels, out_channels, 1, 1, 0), eps=1e-4)
             )
 
 
@@ -36,7 +37,7 @@ class GBlockCell(nn.Module):
 class GBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(GBlock, self).__init__()
-        self.conv = nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0))
+        self.conv = spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0, bias=False), eps=1e-4)
         self.g_block = GBlockCell(in_channels, in_channels, upsample=False)
         self.g_block_up = GBlockCell(in_channels, out_channels, upsample=True)
 
@@ -49,13 +50,13 @@ class GBlock(nn.Module):
 class LastGBlock(nn.Module):
     def __init__(self, in_channels):
         super(LastGBlock, self).__init__()
-        self.conv = nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0))
+        self.conv = spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0, bias=False), eps=1e-4)
         self.g_block = GBlockCell(in_channels, in_channels, upsample=False)
         self.g_block_up = GBlockCell(in_channels, in_channels, upsample=True)
         self.conv_out = nn.Sequential(
                 nn.BatchNorm2d(in_channels),
                 nn.ReLU(inplace=True),
-                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, 4, 1, 1, 0))
+                spectral_norm(nn.Conv2d(in_channels, 4, 1, 1, 0), eps=1e-4)
                 )
 
     def forward(self, x):

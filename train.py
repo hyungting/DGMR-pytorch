@@ -45,7 +45,7 @@ def main():
     out_step = 6
     img_size = 256
     dbz = True
-    batch_size = 45
+    batch_size = 24
     #######################
 
     train_dataset = MultiNimrodDataset(root, target_year_list=train_year_list,
@@ -92,7 +92,7 @@ def main():
     #########################
 
     ##### LOSS SETTINGS #####
-    generator_loss = LaplacianPyramidLoss().to(device)
+    generator_loss = Regularizer
     spatial_loss = DiscriminatorLoss
     temporal_loss = DiscriminatorLoss
     #########################

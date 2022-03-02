@@ -1,6 +1,7 @@
 import torch
 import random
 import torch.nn as nn
+from torch.nn.utils.parametrizations import spectral_norm
 
 from layers.DBlock import DBlock, D3Block
 from utils.utils import random_crop, space2depth
@@ -15,18 +16,18 @@ class SpatialDiscriminator(nn.Module):
 
         self.avgpooling = nn.AvgPool2d(2)
         self.d_blocks = nn.ModuleList([
-                DBlock(4, 3 * 4, relu=False, downsample=True), # 4 -> (3 * 4) * 4 = 48
-                DBlock(12 * 4, 6 * 4, downsample=True), # 48 -> (6 * 4) * 4 = 96
-                DBlock(24 * 4, 12 * 4, downsample=True), # 96 -> (12 * 4) * 4 = 192
-                DBlock(48 * 4, 24 * 4, downsample=True), # 192 -> (24 * 4) * 4 = 384
-                DBlock(96 * 4, 48 * 4, downsample=True), # 384 -> (48 * 4) * 4 = 768
-                DBlock(192 * 4, 192 * 4, downsample=False) # 768 -> 768, no downsample no * 4
+                DBlock(4, 48, relu=False, downsample=True), # 4 -> (3 * 4) * 4 = 48
+                DBlock(48, 96, downsample=True), # 48 -> (6 * 4) * 4 = 96
+                DBlock(96, 192, downsample=True), # 96 -> (12 * 4) * 4 = 192
+                DBlock(192, 384, downsample=True), # 192 -> (24 * 4) * 4 = 384
+                DBlock(384, 768, downsample=True), # 384 -> (48 * 4) * 4 = 768
+                DBlock(768, 768, downsample=False) # 768 -> 768, no downsample no * 4
                 ])
         self.linear = nn.Sequential(
                 nn.BatchNorm1d(768),
-                nn.utils.parametrizations.spectral_norm(nn.Linear(768, 1))
+                spectral_norm(nn.Linear(768, 1))
                 )
-        self.activation = nn.Tanh()
+        self.relu = nn.ReLU()
 
     def forward(self, x):
         x = x.unsqueeze(2)
@@ -46,6 +47,7 @@ class SpatialDiscriminator(nn.Module):
             if self.debug: print(f"D block{i}: {x.shape}")
 
         # sum pooling
+        x = self.relu(x)
         x = torch.sum(x, dim=(-1, -2))
         if self.debug: print(f"Sum pool: {x.shape}")
 
@@ -68,20 +70,22 @@ class TemporalDiscriminator(nn.Module):
         self.factor = factor
         self.size = size
 
+        self.avgpooling = nn.AvgPool3d(2)
         self.d3_blocks = nn.ModuleList([
-                D3Block(4, 3 * 4, relu=False, downsample=True), # C: 4 -> 48, T -> T/2
-                D3Block(12 * 4, 6 * 4, downsample=True) # C: 48 -> 96, T/2 -> T/4 (not exactly the same as DGMR)
+                D3Block(4, 48, relu=False, downsample=True), # C: 4 -> 48, T -> T/2
+                D3Block(48, 96, downsample=True) # C: 48 -> 96, T/2 -> T/4 (not exactly the same as DGMR)
                 ])
         self.d_blocks = nn.ModuleList([
-                DBlock(24 * 4, 12 * 4, downsample=True), # 96 -> (12 * 4) * 4 = 192
-                DBlock(48 * 4, 24 * 4, downsample=True), # 192 -> (24 * 4) * 4 = 384
-                DBlock(96 * 4, 48 * 4, downsample=True), # 384 -> (48 * 4) * 4 = 768
-                DBlock(192 * 4, 192 * 4, downsample=False) # 768 -> 768, no downsample no * 4
+                DBlock(96, 192, downsample=True), # 96 -> (12 * 4) * 4 = 192
+                DBlock(192, 384, downsample=True), # 192 -> (24 * 4) * 4 = 384
+                DBlock(384, 768, downsample=True), # 384 -> (48 * 4) * 4 = 768
+                DBlock(768, 768, downsample=False) # 768 -> 768, no downsample no * 4
                 ])
         self.linear = nn.Sequential(
                 nn.BatchNorm1d(768),
-                nn.utils.parametrizations.spectral_norm(nn.Linear(768, 1))
+                spectral_norm(nn.Linear(768, 1))
                 )
+        self.relu = nn.ReLU()
         self.activation = nn.Tanh()
 
     def forward(self, x):
@@ -101,7 +105,7 @@ class TemporalDiscriminator(nn.Module):
             if self.debug: print(f"3D block: {x.shape}")
 
         B, C, T, H, W  = x.shape
-        x = x.permute(0, 2, 1, 3, 4).view(B*T, C, H, W)
+        x = x.permute(0, 2, 1, 3, 4).reshape(B*T, C, H, W)
         if self.debug: print(f"Reshaped: {x.shape}")
 
         for i, block in enumerate(self.d_blocks):
@@ -109,6 +113,7 @@ class TemporalDiscriminator(nn.Module):
             if self.debug: print(f"D block{i}: {x.shape}")
 
         # sum pooling
+        x = self.relu(x)
         x = torch.sum(x, dim=(-1, -2))
         if self.debug: print(f"Sum pool: {x.shape}")
 
@@ -120,8 +125,6 @@ class TemporalDiscriminator(nn.Module):
 
         x = torch.sum(x, dim=1)
         if self.debug: print(f"Sum up : {x.shape}")
-
-        #x = self.activation(x)
 
         return x
 

@@ -16,10 +16,10 @@ class Generator(nn.Module):
         self.out_step = out_step
         self.debug = debug
 
-        self.d_block0 = nn.ModuleList([DBlock(self.in_step*4, self.in_step*2, relu=False, downsample=True) for _ in range(3)])
-        self.d_block1 = nn.ModuleList([DBlock(self.in_step*8, self.in_step*4, relu=False, downsample=True) for _ in range(3)])
-        self.d_block2 = nn.ModuleList([DBlock(self.in_step*16, self.in_step*8, relu=False, downsample=True) for _ in range(3)])
-        self.d_block3 = nn.ModuleList([DBlock(self.in_step*32, self.in_step*16, relu=False, downsample=True) for _ in range(3)])
+        self.d_block0 = nn.ModuleList([DBlock(self.in_step*4, self.in_step*8, relu=False, downsample=True) for _ in range(3)])
+        self.d_block1 = nn.ModuleList([DBlock(self.in_step*8, self.in_step*16, relu=False, downsample=True) for _ in range(3)])
+        self.d_block2 = nn.ModuleList([DBlock(self.in_step*16, self.in_step*32, relu=False, downsample=True) for _ in range(3)])
+        self.d_block3 = nn.ModuleList([DBlock(self.in_step*32, self.in_step*64, relu=False, downsample=True) for _ in range(3)])
 
         self.conv0 = nn.Sequential(
                 nn.utils.parametrizations.spectral_norm(nn.Conv2d(96, 48, 3, 1, 1)),
