@@ -92,7 +92,7 @@ def main():
     #########################
 
     ##### LOSS SETTINGS #####
-    generator_loss = LaplacianPyramidLoss()
+    generator_loss = LaplacianPyramidLoss().to(device)
     spatial_loss = DiscriminatorLoss
     temporal_loss = DiscriminatorLoss
     #########################

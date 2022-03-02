@@ -48,6 +48,7 @@ class LaplacianPyramidLoss(nn.Module):
     def conv_gauss(self, x):
         weights = self.make_gauss_kernel()
         weights = weights.view(1, 1, self.kernel_size, self.kernel_size)#.repeat(1, 1, 1, 1)
+        weights = weights.to(x.device)
         result = x
         for r in range(self.repeat):
             result = self.conv(x, weights)
@@ -67,7 +68,7 @@ class LaplacianPyramidLoss(nn.Module):
     def forward(self, x, target):
         B, N, H, W = x.shape
         P = [_ for _ in range(self.max_level)]
-        loss = torch.zeros(4)
+        loss = torch.zeros(N)
         for n in range(N):
             x_pyramid = self.make_laplacian_pyramid(x[:, n, ...].unsqueeze(1))
             t_pyramid = self.make_laplacian_pyramid(target[:, n, ...].unsqueeze(1))
