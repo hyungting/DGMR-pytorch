@@ -11,19 +11,19 @@ class ConvGRUCell(nn.Module):
         super(ConvGRUCell, self).__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
-        self.reset_gate = nn.utils.spectral_norm(nn.Conv2d(
+        self.reset_gate = nn.utils.parametrizations.spectral_norm(nn.Conv2d(
                 in_channels=(input_dim+hidden_dim),
                 out_channels=hidden_dim,
                 kernel_size=3,
                 padding=1
                 ))
-        self.update_gate = nn.utils.spectral_norm(nn.Conv2d(
+        self.update_gate = nn.utils.parametrizations.spectral_norm(nn.Conv2d(
                 in_channels=(input_dim+hidden_dim),
                 out_channels=hidden_dim,
                 kernel_size=3,
                 padding=1
                 ))
-        self.out_gate = nn.utils.spectral_norm(nn.Conv2d(
+        self.out_gate = nn.utils.parametrizations.spectral_norm(nn.Conv2d(
                 in_channels=input_dim+hidden_dim,
                 out_channels=hidden_dim,
                 kernel_size=3,

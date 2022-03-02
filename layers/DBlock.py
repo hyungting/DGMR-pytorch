@@ -15,14 +15,14 @@ class DBlock(nn.Module):
         ReLU = (nn.ReLU() if relu else Identity())
 
         self.conv1x1 = nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv2d(in_channels, out_channels, 1, 1, 0)),
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, out_channels, 1, 1, 0)),
                 Scaling()
                 )
         self.conv3x3 = nn.Sequential(
                 ReLU,
-                nn.utils.spectral_norm(nn.Conv2d(in_channels, in_channels, 3, 1, 1)),
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, in_channels, 3, 1, 1)),
                 nn.ReLU(inplace=True),
-                nn.utils.spectral_norm(nn.Conv2d(in_channels, out_channels, 3, 1, 1)),
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, out_channels, 3, 1, 1)),
                 Scaling()
                 )
 
@@ -38,14 +38,14 @@ class D3Block(nn.Module):
         ReLU = (nn.ReLU() if relu else Identity())
 
         self.conv1x1 = nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv3d(in_channels, out_channels, 1, (2, 1, 1), (0, 0, 0))),
+                nn.utils.parametrizations.spectral_norm(nn.Conv3d(in_channels, out_channels, 1, (2, 1, 1), (0, 0, 0))),
                 Scaling()
                 )
         self.conv3x3 = nn.Sequential(
                 ReLU,
-                nn.utils.spectral_norm(nn.Conv3d(in_channels, in_channels, 3, (1, 1, 1), (1, 1, 1))),
+                nn.utils.parametrizations.spectral_norm(nn.Conv3d(in_channels, in_channels, 3, (1, 1, 1), (1, 1, 1))),
                 nn.ReLU(inplace=True),
-                nn.utils.spectral_norm(nn.Conv3d(in_channels, out_channels, 3, (2, 1, 1), (1, 1, 1))),
+                nn.utils.parametrizations.spectral_norm(nn.Conv3d(in_channels, out_channels, 3, (2, 1, 1), (1, 1, 1))),
                 Scaling()
                 )
 

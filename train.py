@@ -11,10 +11,10 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 
-from model import Generator, SpatialDiscriminator, TemporalDiscriminator
+from models import Generator, SpatialDiscriminator, TemporalDiscriminator
 from dataset import MultiNimrodDataset, NimrodDataset
-from utils import Normalizer, Regularizer, DiscriminatorLoss
-from plot import plot_test_image, plot_image, plot_noise
+from utils import Normalizer, Regularizer, DiscriminatorLoss, LaplacianPyramidLoss
+from utils.plot import plot_test_image, plot_image, plot_noise
 
 warnings.filterwarnings('ignore')
 
@@ -38,7 +38,6 @@ def main():
     test_file = os.path.join(root, f"Nimrod_{test_year}.dat")
     test_csv = os.path.join(root, "log", f"rain_record_{test_year}.csv")
     ################
-    
 
     ##### PARAMS #####
     nonzeros_th = 150000
@@ -46,7 +45,7 @@ def main():
     out_step = 6
     img_size = 256
     dbz = True
-    batch_size = 40
+    batch_size = 45
     #######################
 
     train_dataset = MultiNimrodDataset(root, target_year_list=train_year_list,
@@ -75,7 +74,7 @@ def main():
     LOAD = False
     ckpt_path = "model_best.pth.tar"
     lr_G = 5e-5
-    lr_D = 1e-3
+    lr_D = 2e-4
     weight_decay = 1e-4
     start_e = 0
     n_epoch = 500
@@ -93,7 +92,7 @@ def main():
     #########################
 
     ##### LOSS SETTINGS #####
-    generator_loss = Regularizer
+    generator_loss = LaplacianPyramidLoss()
     spatial_loss = DiscriminatorLoss
     temporal_loss = DiscriminatorLoss
     #########################
@@ -113,7 +112,7 @@ def main():
     temporal_discriminator.to(device)
 
     print("##### Model loaded! #####")
-    writer = SummaryWriter(f"../experiments/DGMR-0219")
+    writer = SummaryWriter(f"../experiments/DGMR-0302-LPloss")
 
     if LOAD:
         ckpt = torch.load(ckpt_path)
@@ -311,6 +310,7 @@ def main():
                         )
                     )
         torch.save(state, "model_best.pth.tar")
+
         torch.cuda.empty_cache()
     return
 

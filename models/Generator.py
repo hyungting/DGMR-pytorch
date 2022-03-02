@@ -22,24 +22,24 @@ class Generator(nn.Module):
         self.d_block3 = nn.ModuleList([DBlock(self.in_step*32, self.in_step*16, relu=False, downsample=True) for _ in range(3)])
 
         self.conv0 = nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv2d(96, 48, 3, 1, 1)),
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(96, 48, 3, 1, 1)),
                 nn.ReLU(inplace=True)
                 )
         self.conv1 = nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv2d(192, 96, 3, 1, 1)),
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(192, 96, 3, 1, 1)),
                 nn.ReLU(inplace=True)
                 )
         self.conv2 = nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv2d(384, 192, 3, 1, 1)),
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(384, 192, 3, 1, 1)),
                 nn.ReLU(inplace=True)
                 )
         self.conv3 = nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv2d(768, 384, 3, 1, 1)),
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(768, 384, 3, 1, 1)),
                 nn.ReLU(inplace=True)
                 ) 
         self.latent_conv = nn.ModuleList(
                 nn.Sequential(
-                    nn.utils.spectral_norm(nn.Conv2d(8, 8, 3, 1, 1)),
+                    nn.utils.parametrizations.spectral_norm(nn.Conv2d(8, 8, 3, 1, 1)),
                     LBlock(8, 24),
                     LBlock(24, 48),
                     LBlock(48, 192),

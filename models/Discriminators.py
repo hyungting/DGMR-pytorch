@@ -24,7 +24,7 @@ class SpatialDiscriminator(nn.Module):
                 ])
         self.linear = nn.Sequential(
                 nn.BatchNorm1d(768),
-                nn.utils.spectral_norm(nn.Linear(768, 1))
+                nn.utils.parametrizations.spectral_norm(nn.Linear(768, 1))
                 )
         self.activation = nn.Tanh()
 
@@ -80,7 +80,7 @@ class TemporalDiscriminator(nn.Module):
                 ])
         self.linear = nn.Sequential(
                 nn.BatchNorm1d(768),
-                nn.utils.spectral_norm(nn.Linear(768, 1))
+                nn.utils.parametrizations.spectral_norm(nn.Linear(768, 1))
                 )
         self.activation = nn.Tanh()
 

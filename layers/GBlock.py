@@ -17,14 +17,14 @@ class GBlockCell(nn.Module):
                 nn.BatchNorm2d(in_channels),
                 nn.ReLU(inplace=True),
                 Scaling(scale_factor=2),
-                nn.utils.spectral_norm(nn.Conv2d(in_channels, in_channels, 3, 1, 1)),
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, in_channels, 3, 1, 1)),
                 nn.BatchNorm2d(in_channels),
                 nn.ReLU(inplace=True),
-                nn.utils.spectral_norm(nn.Conv2d(in_channels, out_channels, 3, 1, 1))
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, out_channels, 3, 1, 1))
                 )
         self.conv1x1 = nn.Sequential(
             Scaling(scale_factor=2),
-            nn.utils.spectral_norm(nn.Conv2d(in_channels, out_channels, 1, 1, 0))
+            nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, out_channels, 1, 1, 0))
             )
 
 
@@ -36,7 +36,7 @@ class GBlockCell(nn.Module):
 class GBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(GBlock, self).__init__()
-        self.conv = nn.utils.spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0))
+        self.conv = nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0))
         self.g_block = GBlockCell(in_channels, in_channels, upsample=False)
         self.g_block_up = GBlockCell(in_channels, out_channels, upsample=True)
 
@@ -49,13 +49,13 @@ class GBlock(nn.Module):
 class LastGBlock(nn.Module):
     def __init__(self, in_channels):
         super(LastGBlock, self).__init__()
-        self.conv = nn.utils.spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0))
+        self.conv = nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0))
         self.g_block = GBlockCell(in_channels, in_channels, upsample=False)
         self.g_block_up = GBlockCell(in_channels, in_channels, upsample=True)
         self.conv_out = nn.Sequential(
                 nn.BatchNorm2d(in_channels),
                 nn.ReLU(inplace=True),
-                nn.utils.spectral_norm(nn.Conv2d(in_channels, 4, 1, 1, 0))
+                nn.utils.parametrizations.spectral_norm(nn.Conv2d(in_channels, 4, 1, 1, 0))
                 )
 
     def forward(self, x):
