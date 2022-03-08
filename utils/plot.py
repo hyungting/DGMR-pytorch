@@ -2,14 +2,17 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_test_image(arrs, true_title, pred_title, output_path=None):
-    if isinstance(arrs, torch.Tensor):
-        arrs = arrs.detach().cpu().numpy()
+def plot_test_image(pred, target, pred_title, true_title, output_path=None):
+    if isinstance(pred, torch.Tensor):
+        pred = pred.detach()
+    if isinstance(target, torch.Tensor):
+        target = target.detach()
 
+    arrs = torch.stack((target, pred), dim=0).cpu().numpy()
     title = [true_title, pred_title]
     batch = [1, 0]
     S = arrs.shape[1]
-    fig = plt.figure(figsize=(5*S, 20))
+    fig = plt.figure(figsize=(3*S, 15))
 
     for b in batch:
         arr = arrs[b] # S, H, W

@@ -9,11 +9,11 @@ import numpy as np
 from tqdm import tqdm
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 from models import Generator, SpatialDiscriminator, TemporalDiscriminator
 from dataset import MultiNimrodDataset, NimrodDataset
-from utils import Normalizer, Regularizer, DiscriminatorLoss, LaplacianPyramidLoss
+from utils.loss import Regularizer, DiscriminatorLoss
 from utils.plot import plot_test_image, plot_image, plot_noise
 
 warnings.filterwarnings('ignore')
@@ -45,7 +45,7 @@ def main():
     out_step = 6
     img_size = 256
     dbz = True
-    batch_size = 24
+    batch_size = 4
     #######################
 
     train_dataset = MultiNimrodDataset(root, target_year_list=train_year_list,
@@ -73,12 +73,13 @@ def main():
     ##### HYPER PARAMS #####
     LOAD = False
     ckpt_path = "model_best.pth.tar"
-    lr_G = 5e-5
-    lr_D = 2e-4
-    weight_decay = 1e-4
+    lr_G = 5e-4
+    lr_D = 2e-3
     start_e = 0
     n_epoch = 500
     n_G = 2
+    alpha = 20 # weight of regularization term
+    margin = 0.5 # margin of discriminator's hinge loss
     ########################
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -92,15 +93,15 @@ def main():
     #########################
 
     ##### LOSS SETTINGS #####
-    generator_loss = Regularizer
-    spatial_loss = DiscriminatorLoss
-    temporal_loss = DiscriminatorLoss
+    generator_loss = Regularizer(alpha=alpha)
+    spatial_loss = DiscriminatorLoss(margin=margin)
+    temporal_loss = DiscriminatorLoss(margin=margin)
     #########################
 
     ##### OPTIMIZER SETTINGS #####
-    optim_G = torch.optim.AdamW(generator.parameters(), lr=lr_G, betas=(0, 0.999))#, weight_decay=weight_decay)
-    optim_SD = torch.optim.AdamW(spatial_discriminator.parameters(), lr=lr_D, betas=(0, 0.999))#, weight_decay=weight_decay)
-    optim_TD = torch.optim.AdamW(temporal_discriminator.parameters(), lr=lr_D, betas=(0, 0.999))#, weight_decay=weight_decay)
+    optim_G = torch.optim.Adam(generator.parameters(), lr=lr_G, betas=(0, 0.999))#, weight_decay=weight_decay)
+    optim_SD = torch.optim.Adam(spatial_discriminator.parameters(), lr=lr_D, betas=(0, 0.999))#, weight_decay=weight_decay)
+    optim_TD = torch.optim.Adam(temporal_discriminator.parameters(), lr=lr_D, betas=(0, 0.999))#, weight_decay=weight_decay)
     
     scheduler_G = torch.optim.lr_scheduler.CosineAnnealingLR(optim_G, 10)
     scheduler_SD = torch.optim.lr_scheduler.CosineAnnealingLR(optim_SD, 10)
@@ -112,7 +113,7 @@ def main():
     temporal_discriminator.to(device)
 
     print("##### Model loaded! #####")
-    writer = SummaryWriter(f"../experiments/DGMR-0302-LPloss")
+    writer = SummaryWriter(f"../experiments/DGMR-0304")
 
     if LOAD:
         ckpt = torch.load(ckpt_path)
@@ -137,21 +138,19 @@ def main():
         G_val_losses, SD_val_losses, TD_val_losses = [], [], []
         SD_trainG_losses, TD_trainG_losses = [], []
         
-        for p in generator.parameters(): p.requires_grad_(False)
-        for p in spatial_discriminator.parameters(): p.requires_grad_(True)
-        for p in temporal_discriminator.parameters(): p.requires_grad_(True)
-        
         pbar = tqdm(train_loader)
         
-        for img in pbar:
+        for batch in pbar:
             pbar.set_description("   >>>>> TRAINING D")
-            b = img.shape[0]
-            true_validity = 1 * torch.ones(b, 1).to(device)
-            false_validity = -1 * torch.ones(b, 1).to(device)
+            img_x, img_y = batch
+            b = img_x.shape[0]
             
-            img_x = img[:, 0:in_step, ...].to(device)
-            img_y = img[:, in_step:, ...].to(device)
+            img_x = img_x.to(device)
+            img_y = img_y.to(device)
 
+            for p in generator.parameters(): p.requires_grad_(False)
+            for p in spatial_discriminator.parameters(): p.requires_grad_(True)
+            for p in temporal_discriminator.parameters(): p.requires_grad_(False)
             ##### GENERATE FAKE DATA #####
             generator.eval()
             pred = generator(img_x).detach()
@@ -162,31 +161,35 @@ def main():
             real_spatial_validity = spatial_discriminator(img_y)
             fake_spatial_validity = spatial_discriminator(pred)
 
-            real_loss_SD = spatial_loss(real_spatial_validity, true_validity)
-            fake_loss_SD = spatial_loss(fake_spatial_validity, false_validity)
+            real_loss_SD = spatial_loss(real_spatial_validity, True)
+            fake_loss_SD = spatial_loss(fake_spatial_validity, False)
             
             loss_SD = real_loss_SD + fake_loss_SD
             SD_train_losses.append(loss_SD.item())
+
+            optim_SD.zero_grad()
+            loss_SD.backward()
+            optim_SD.step()
             
             ##### TRAIN TEMPORAL D #####
+            for p in spatial_discriminator.parameters(): p.requires_grad_(False)
+            for p in temporal_discriminator.parameters(): p.requires_grad_(True)
             temporal_discriminator.train()
             
             real_temporal_validity = temporal_discriminator(torch.cat((img_x, img_y), dim=1))
             fake_temporal_validity = temporal_discriminator(torch.cat((img_x, pred), dim=1))
             
-            real_loss_TD = temporal_loss(real_temporal_validity, true_validity)
-            fake_loss_TD = temporal_loss(fake_temporal_validity, false_validity)
+            real_loss_TD = temporal_loss(real_temporal_validity, True)
+            fake_loss_TD = temporal_loss(fake_temporal_validity, False)
 
             loss_TD = real_loss_TD + fake_loss_TD
             TD_train_losses.append(loss_TD.item())
 
             ##### BACKWARD #####
-            loss_D = loss_SD + loss_TD
+            #loss_D = loss_SD + loss_TD
             
-            optim_SD.zero_grad()
             optim_TD.zero_grad()
-            loss_D.backward()
-            optim_SD.step()
+            loss_TD.backward()
             optim_TD.step()
             #scheduler_TD.step()
 
@@ -211,25 +214,29 @@ def main():
             pbar = tqdm(train_loader)
             for img in pbar:
                 pbar.set_description("   >>>>> TRAINING G")
-                b = img.shape[0]
+                img_x, img_y = batch
+                b = img_x.shape[0]
                 
-                img_x = img[:, 0:in_step, ...].to(device)
-                img_y = img[:, in_step:, ...].to(device)
+                img_x = img_x.to(device)
+                img_y = img_y.to(device)
 
-                pred = generator(img_x)
-                loss = generator_loss(pred, img_y)
-                G_train_losses.append(loss.item())
+                loss, loss_SD, loss_TD = 0, 0, 0
+
+                for _ in range(6):
+                    pred = generator(img_x)
+                    loss += generator_loss(pred, img_y)
+                    
+                    temporal_validity = temporal_discriminator(torch.cat((img_x, pred.detach()), dim=1))
+                    spatial_validity = spatial_discriminator(pred.detach())
+
+                    loss_SD += (-torch.mean(spatial_validity))
+                    loss_TD += (-torch.mean(temporal_validity))
                 
-                temporal_validity = temporal_discriminator(torch.cat((img_x, pred.detach()), dim=1))
-                spatial_validity = spatial_discriminator(pred.detach())
+                G_train_losses.append(loss.item()/6)
+                SD_trainG_losses.append(loss_SD.item()/6)
+                TD_trainG_losses.append(loss_TD.item()/6)
                 
-                loss_SD = -torch.mean(spatial_validity)
-                loss_TD = -torch.mean(temporal_validity)
-                
-                SD_trainG_losses.append(loss_SD.item())
-                TD_trainG_losses.append(loss_TD.item())
-                
-                loss = loss + (loss_SD + loss_TD)
+                loss = (loss + loss_SD + loss_TD) / 6
                 
                 optim_G.zero_grad()
                 loss.backward()
@@ -252,11 +259,11 @@ def main():
                 pbar = tqdm(test_loader)
                 for batch in pbar:
                     pbar.set_description("   >>>>> VALIDATION")
-                    img, time = batch
-                    b = img.shape[0]
+                    img_x, img_y, time = batch
+                    b = img_x.shape[0]
                     
-                    img_x = img[:, 0:in_step, ...].to(device)
-                    img_y = img[:, in_step:, ...].to(device)
+                    img_x = img_x.to(device)
+                    img_y = img_y.to(device)
 
                     pred = generator(img_x).detach()
                     spatial_validity = spatial_discriminator(pred)
@@ -271,10 +278,9 @@ def main():
                     TD_val_losses.append(loss_TD.item())
 
                     if j == 0 or j == 30:
-                        image = torch.cat((img_y[0].unsqueeze(0), pred[0].unsqueeze(0)), dim=0)
                         true_title = [f"{time[in_step+_][0]} (True)" for _ in range(out_step)]
                         pred_title = [f"{time[in_step+_][0]} (Pred)" for _ in range(out_step)]
-                        figure = plot_test_image(image, true_title, pred_title)
+                        figure = plot_test_image(pred[0], img_y[0], pred_title, true_title)
                         writer.add_figure(f"Output: {j}", figure, e)
                     j += 1
             writer.add_scalar("[VAL] G loss", np.mean(G_val_losses), e)

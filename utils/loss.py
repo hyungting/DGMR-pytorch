@@ -3,28 +3,52 @@ Skilful precipitation nowcasting using deep generative models of radar, from Dee
 https://arxiv.org/abs/2104.00954
 """
 
+from xmlrpc.client import boolean
 import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-def Regularizer(pred, target, alpha=20):
-    B, N, H, W = pred.shape
-    difference = torch.abs(pred - target)
-    # 24mm/h -> 45dbz
-    #map = 45 * torch.ones(target.shape, device=pred.device)
-    #map = torch.cat((target, map), dim=1)
-    #weight, _ = torch.max(map, keepdim=True, dim=1)
-    weight = torch.clamp(target, min=0, max=45)
-    loss = difference * weight
-    return alpha * loss.mean()
+class Regularizer(nn.Module):
+    """
+    regularization terms of generator
+    weight: max(y+1, 24) in the paper, clip_by_value(0, 24) in the pseudo code
+    in paper, max value is 24mm/hr (== 45dbz)
+    """
+    def __init__(self, alpha=20, min_value=0, max_value=45):
+        super(Regularizer, self).__init__()
+        self.alpha = alpha
+        self.min_value = min_value
+        self.max_value = max_value
+    
+    def forward(self, pred, target):
+        difference = torch.abs(pred - target)
+        #map = 45 * torch.ones(target.shape, device=pred.device)
+        #map = torch.cat((target, map), dim=1)
+        #weight, _ = torch.max(map, keepdim=True, dim=1)
+        weight = torch.clamp(target, min=self.min_value, max=self.max_value)
+        loss = difference * weight
+        return self.alpha * loss.mean()
 
-def DiscriminatorLoss(pred, operator):
-    # if y = true, y = 1
-    # if y = false, y = -1
-    loss = F.relu(1. - operator * pred)
-    return Variable(loss.mean(), requires_grad=True)
+class DiscriminatorLoss(nn.Module):
+    """
+    Discriminators' loss,
+    the last layer of discriminator is linear (N, 1),
+    the outputs of discriminator include in (-inf, inf),
+    # if validity == True, operator = +
+    # else, operator = -
+    """
+    def __init__(self, margin=1.):
+        super(DiscriminatorLoss, self).__init__()
+        self.margin = margin
+
+    def forward(self, pred, validity: boolean):
+        if validity:
+            loss = F.relu(self.margin - pred)
+        else:
+            loss = F.relu(self.margin + pred)
+        return Variable(loss.mean(), requires_grad=True)
 
 class LaplacianPyramidLoss(nn.Module):
     """

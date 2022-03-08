@@ -7,12 +7,10 @@ from layers.DBlock import DBlock, D3Block
 from utils.utils import random_crop, space2depth
 
 class SpatialDiscriminator(nn.Module):
-    def __init__(self, n_frame=8, factor=2, debug=False):
+    def __init__(self, n_frame=8, debug=False):
         super(SpatialDiscriminator, self).__init__()
         self.debug = debug
         self.n_frame = n_frame
-        self.factor = factor
-        self.in_channels = n_frame * (factor**2) # 8 * 4
 
         self.avgpooling = nn.AvgPool2d(2)
         self.d_blocks = nn.ModuleList([
@@ -39,7 +37,7 @@ class SpatialDiscriminator(nn.Module):
         if self.debug: print(f"Reshaped: {x.shape}")
         x = self.avgpooling(x)
         if self.debug: print(f"Avg pool: {x.shape}")
-        x = space2depth(x, self.factor)
+        x = space2depth(x)
         if self.debug: print(f"S2Dshape: {x.shape}")
 
         for i, block in enumerate(self.d_blocks):
@@ -64,11 +62,10 @@ class SpatialDiscriminator(nn.Module):
         return x
 
 class TemporalDiscriminator(nn.Module):
-    def __init__(self, factor=2, size=128, debug=False):
+    def __init__(self, crop_size=128, debug=False):
         super(TemporalDiscriminator, self).__init__()
         self.debug = debug
-        self.factor = factor
-        self.size = size
+        self.crop_size = crop_size
 
         self.avgpooling = nn.AvgPool3d(2)
         self.d3_blocks = nn.ModuleList([
@@ -86,10 +83,10 @@ class TemporalDiscriminator(nn.Module):
                 spectral_norm(nn.Linear(768, 1))
                 )
         self.relu = nn.ReLU()
-        self.activation = nn.Tanh()
 
     def forward(self, x):
-        x = random_crop(x, size=128).to(x.device)
+        # n_frame = in_step + out_step
+        x = random_crop(x, size=self.crop_size).to(x.device)
         x = x.unsqueeze(1)
         B, C, T, H, W = x.shape
 
@@ -128,6 +125,16 @@ class TemporalDiscriminator(nn.Module):
 
         return x
 
+class Discriminators(nn.Module):
+    def __init__(self, n_frame=6, crop_size=128, debug=False):
+        super(Discriminators, self).__init__()
+        self.spatial_discriminator = SpatialDiscriminator(n_frame=n_frame, debug=debug)
+        self.temporal_discriminator = TemporalDiscriminator(crop_size=crop_size, debug=debug)
+
+    def forward(self, x, y):
+        s_score = self.spatial_discriminator(y)
+        t_score = self.temporal_discriminator(torch.cat((x, y), dim=1))
+        return torch.cat((s_score, t_score), dim=0)
 
 if __name__ == "__main__":
     device = torch.device("cuda")
