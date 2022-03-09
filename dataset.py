@@ -3,7 +3,8 @@ import re
 import torch
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
+from functools import lru_cache
+from datetime import timedelta
 from torchvision import transforms
 from torch.utils.data import Dataset
 from pytorch_lightning import LightningDataModule
@@ -81,7 +82,7 @@ class MultiNimrodDataset(Dataset):
         self.return_time = return_time
         self.data_type = data_type
         
-        self.rain_th = 0.1 # not in argument
+        self.rain_th = 0.01 # not in argument
 
         self.map_list = []
         self.record_df = []
@@ -156,7 +157,7 @@ class MultiNimrodDataset(Dataset):
 class SparseCOONimrodDataset(Dataset):
     def __init__(self, root, target_year,
             nonzeros_th=200000, in_step=4, out_step=18,
-            cropsize=256, dbz=True, return_time=False, data_type="train"):
+            cropsize=256, dbz=False, return_time=False, data_type="train"):
         self.root = root
         self.target_year = target_year
         self.nonzeros_th = nonzeros_th
@@ -166,7 +167,11 @@ class SparseCOONimrodDataset(Dataset):
         self.dbz = dbz
         self.return_time = return_time
         self.data_type = data_type
-        self.rain_th = 0.1 # not in argument
+        self.rain_th = 0.01 # not in argument
+        
+        self.map = {}
+        for y in target_year:
+            self.map[y] = np.load(os.path.join(self.root, f"SparseCOONimrod_{y}.npz"), mmap_mode="r")
         
         logfiles = [os.path.join(root, "log", f"rain_record_{y}.csv") for y in target_year]
         self.record_df = [pd.read_csv(f) for f in logfiles]
@@ -180,7 +185,6 @@ class SparseCOONimrodDataset(Dataset):
         if self.data_type == "train":
             self.transform = transforms.Compose([
                 transforms.ToPILImage(),
-                transforms.RandomCrop(cropsize),
                 transforms.ToTensor()
                 ])
         else:
@@ -190,78 +194,68 @@ class SparseCOONimrodDataset(Dataset):
                 transforms.ToTensor()
                 ])
 
+    @lru_cache(1000)
+    def read_npz(self, t):
+        return np.load(os.path.join(self.root, f"SparseCOONimrod_{t.year}.npz"), mmap_mode="r")[str(t)]#.copy()
+
+    def random_crop(self, imgs):
+        idx = np.random.randint(low=0, high=512-self.cropsize, size=2)
+        imgs = np.stack(imgs, axis=0)[:, idx[0]:idx[0]+self.cropsize, idx[1]:idx[1]+self.cropsize]
+        return imgs
+
     def coo2numpy(self, coo):
         col, row, data = coo[0], coo[1], coo[2]
         x = np.zeros((512, 512), dtype=np.int16)
         x[col, row] = data
         return x
 
+    def normalize_dbz(self, img):
+        # min = 0.01 mm/hr -> -9 dbz
+        # max = 60 dbz
+        img = (img + 9) / (60 + 9)
+        return img
+
     def __len__(self):
         return len(self.target_index_list)
 
     def __getitem__(self, index):
         idx = self.target_index_list[index]
-        L = len(self.target_index_list)
-        
+        L = len(self.record_df)
+
         if idx - self.in_step < 0:
             start_time = self.record_df.time[0]
         elif idx + self.out_step >= L:
             start_time = self.record_df.time[L-(self.in_step+self.out_step)]
         else:
             start_time = self.record_df.time[idx-self.in_step]
-        
         time_range = [start_time+timedelta(seconds=t*60*5) for t in range(self.in_step+self.out_step)]
-
-        sparse_coo = [np.load(os.path.join(self.root, f"SparseCOONimrod_{t.year}.npz"))[str(t)] for t in time_range]
-        img = [self.coo2numpy(coo) for coo in sparse_coo]
         
+        img = [self.coo2numpy(self.read_npz(t)) for t in time_range]
+        
+        if self.data_type == "train":
+            img = self.random_crop(img)
         img = torch.cat([self.transform(_) for _ in img], dim=0) / 32
-
+        
         if self.dbz:
             img[img>self.rain_th] = torch.log10(((img[img>self.rain_th] **  (8 / 5)) * 200)) * 10
-            img[img<=self.rain_th] = -15
+            img[img<=self.rain_th] = -9
+            #if self.data_type == "train":
+            img = self.normalize_dbz(img)
+        
+        x = img[:self.in_step, ...]
+        y = img[self.in_step:, ...]
 
         if self.return_time:
-            return (img[:self.in_step, ...], img[self.in_step:, ...], [start_time+timedelta(seconds=t*60*5) for t in range(self.in_step+self.out_step)])
+            return (x, y, time_range)
 
-        return (img[:self.in_step, ...], img[self.in_step:, ...])
-
-class MyDataModule(LightningDataModule):
-    def __init__(self):
-        super().__init__()
-    def prepare_data(self):
-        # download, split, etc...
-        # only called on 1 GPU/TPU in distributed
-        pass
-    def setup(self, stage):
-        # make assignments here (val/train/test split)
-        # called on every process in DDP
-        pass
-    def train_dataloader(self):
-        train_split = Dataset(...)
-        return DataLoader(train_split)
-    def val_dataloader(self):
-        val_split = Dataset(...)
-        return DataLoader(val_split)
-    def test_dataloader(self):
-        test_split = Dataset(...)
-        return DataLoader(test_split)
-    def teardown(self):
-        # clean up after fit or test
-        # called on every process in DDP
-        pass
+        return (x, y)
 
 
 if __name__ == "__main__":
     from torch.utils.data import DataLoader
-    import time
-
-    start = time.time()
-    
     root = "/home/yihan/yh/research/Nimrod"
-    files = [os.path.join(root, f"SparseCOONimrod_{y}.npz") for y in range(2016, 2019)]
-    logfiles = [os.path.join(root, "log", f"rain_record_{y}.csv") for y in range(2016, 2019)]
-    dataset = SparseCOONimrodDataset(files, logfiles, return_time=True)
-    #print(len(dataset))
-    dataset[0]
-    #loader = DataLoader(dataset, batch_size=32, shuffle=False, num_workers=1)
+    dataset = SparseCOONimrodDataset(root, range(2016, 2019), return_time=True)
+    #print(dataset)
+    for i in range(5):
+        dataset[300]
+        break
