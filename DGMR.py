@@ -1,7 +1,6 @@
-import tensorboard
+
 import torch
 import pytorch_lightning as pl
-from collections import OrderedDict
 from pytorch_lightning import loggers, Trainer, seed_everything
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -113,6 +112,14 @@ class DGMR(pl.LightningModule):
             if is_last_batch_to_accumulate:
                 optim_G.zero_grad()
                 optim_G.step()
+        
+        if batch_idx == 0:
+            tb = self.logger.experiment
+            pred_title = [f"{t} (pred)" for t in range(self.out_step)]
+            true_title = [f"{t} (true)" for t in range(self.out_step)]
+            for i, (img_p, img_y) in enumerate(zip(torch.stack(pred, dim=0).mean(), y)):
+                fig = plot_test_image(img_p, img_y, pred_title, true_title)
+                tb.add_figure(f"train/ image{i}", fig, global_step=self.current_epoch)
 
         ##### UPDATE LOGGINGS #####
         self.log("train_g_loss", loss_G.detach(), on_step=True, prog_bar=True)
@@ -184,7 +191,8 @@ if __name__ == "__main__":
         max_epochs=5,
         accelerator="gpu",
         check_val_every_n_epoch=1,
-        enable_progress_bar=True)
+        enable_progress_bar=True,
+        default_root_dir="./")
     trainer.fit(
         model,
         train_dataloaders=train_loader,
