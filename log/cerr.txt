@@ -1,0 +1,177 @@
+/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/utils/data/dataloader.py:481: UserWarning: This DataLoader will create 32 worker processes in total. Our suggested max number of worker in current system is 8, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  cpuset_checked))
+GPU available: True, used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py:1585: UserWarning: GPU available but not used. Set the gpus flag in your trainer `Trainer(gpus=1)` or script `--gpus=1`.
+  "GPU available but not used. Set the gpus flag in your trainer `Trainer(gpus=1)` or script `--gpus=1`."
+GPU available: True, used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/2
+/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/utils/data/dataloader.py:481: UserWarning: This DataLoader will create 32 worker processes in total. Our suggested max number of worker in current system is 8, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  cpuset_checked))
+GPU available: True, used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py:1585: UserWarning: GPU available but not used. Set the gpus flag in your trainer `Trainer(gpus=1)` or script `--gpus=1`.
+  "GPU available but not used. Set the gpus flag in your trainer `Trainer(gpus=1)` or script `--gpus=1`."
+initializing distributed: GLOBAL_RANK: 1, MEMBER: 2/2
+----------------------------------------------------------------------------------------------------
+distributed_backend=nccl
+All distributed processes registered. Starting with 2 processes
+----------------------------------------------------------------------------------------------------
+
+LOCAL_RANK: 1 - CUDA_VISIBLE_DEVICES: [0,1]
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+Set SLURM handle signals.
+Set SLURM handle signals.
+
+  | Name           | Type              | Params
+-----------------------------------------------------
+0 | generator      | Generator         | 189 M 
+1 | discriminators | Discriminators    | 33.9 M
+2 | cal_lossG      | Regularizer       | 0     
+3 | cal_lossD      | DiscriminatorLoss | 0     
+-----------------------------------------------------
+223 M     Trainable params
+0         Non-trainable params
+223 M     Total params
+895.139   Total estimated model params size (MB)
+Traceback (most recent call last):
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 685, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 777, in _fit_impl
+    self._run(model, ckpt_path=ckpt_path)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 1199, in _run
+    self._dispatch()
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 1279, in _dispatch
+    self.training_type_plugin.start_training(self)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/plugins/training_type/training_type_plugin.py", line 202, in start_training
+    self._results = trainer.run_stage()
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 1289, in run_stage
+    return self._run_train()
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 1319, in _run_train
+    self.fit_loop.run()
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/fit_loop.py", line 234, in advance
+    self.epoch_loop.run(data_fetcher)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/epoch/training_epoch_loop.py", line 193, in advance
+    batch_output = self.batch_loop.run(batch, batch_idx)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/batch/training_batch_loop.py", line 90, in advance
+    outputs = self.manual_loop.run(split_batch, batch_idx)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/optimization/manual_loop.py", line 111, in advance
+    training_step_output = self.trainer.accelerator.training_step(step_kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/accelerators/accelerator.py", line 219, in training_step
+    return self.training_type_plugin.training_step(*step_kwargs.values())
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/plugins/training_type/ddp.py", line 439, in training_step
+    return self.model(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/parallel/distributed.py", line 886, in forward
+    output = self.module(*inputs[0], **kwargs[0])
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/overrides/base.py", line 81, in forward
+    output = self.module.training_step(*inputs, **kwargs)
+  File "/home/r09521601/dgmr/DGMR.py", line 105, in training_step
+    pred = [self(x) for _ in range(self.n_sample)]
+  File "/home/r09521601/dgmr/DGMR.py", line 105, in <listcomp>
+    pred = [self(x) for _ in range(self.n_sample)]
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/dgmr/DGMR.py", line 80, in forward
+    return self.generator(x)
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/dgmr/models/Generator.py", line 115, in forward
+    x1 = self.gru_layer2[t](g, x1)
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/dgmr/layers/ConvGRU.py", line 44, in forward
+    h_next = h * (1-update) + out * update #h=384, update=384, out=384, update=384
+RuntimeError: CUDA out of memory. Tried to allocate 20.00 MiB (GPU 1; 31.75 GiB total capacity; 30.02 GiB already allocated; 3.75 MiB free; 30.05 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/r09521601/dgmr/train.py", line 56, in <module>
+    main()
+  File "/home/r09521601/dgmr/train.py", line 54, in main
+    val_dataloaders=val_loader)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 741, in fit
+    self._fit_impl, model, train_dataloaders, val_dataloaders, datamodule, ckpt_path
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 698, in _call_and_handle_interrupt
+    self.training_type_plugin.reconciliate_processes(traceback.format_exc())
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/plugins/training_type/ddp.py", line 533, in reconciliate_processes
+    raise DeadlockDetectedException(f"DeadLock detected from rank: {self.global_rank} \n {trace}")
+pytorch_lightning.utilities.exceptions.DeadlockDetectedException: DeadLock detected from rank: 1 
+ Traceback (most recent call last):
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 685, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 777, in _fit_impl
+    self._run(model, ckpt_path=ckpt_path)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 1199, in _run
+    self._dispatch()
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 1279, in _dispatch
+    self.training_type_plugin.start_training(self)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/plugins/training_type/training_type_plugin.py", line 202, in start_training
+    self._results = trainer.run_stage()
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 1289, in run_stage
+    return self._run_train()
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/trainer/trainer.py", line 1319, in _run_train
+    self.fit_loop.run()
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/fit_loop.py", line 234, in advance
+    self.epoch_loop.run(data_fetcher)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/epoch/training_epoch_loop.py", line 193, in advance
+    batch_output = self.batch_loop.run(batch, batch_idx)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/batch/training_batch_loop.py", line 90, in advance
+    outputs = self.manual_loop.run(split_batch, batch_idx)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/loops/optimization/manual_loop.py", line 111, in advance
+    training_step_output = self.trainer.accelerator.training_step(step_kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/accelerators/accelerator.py", line 219, in training_step
+    return self.training_type_plugin.training_step(*step_kwargs.values())
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/plugins/training_type/ddp.py", line 439, in training_step
+    return self.model(*args, **kwargs)
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/parallel/distributed.py", line 886, in forward
+    output = self.module(*inputs[0], **kwargs[0])
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/mlenv/lib/python3.6/site-packages/pytorch_lightning/overrides/base.py", line 81, in forward
+    output = self.module.training_step(*inputs, **kwargs)
+  File "/home/r09521601/dgmr/DGMR.py", line 105, in training_step
+    pred = [self(x) for _ in range(self.n_sample)]
+  File "/home/r09521601/dgmr/DGMR.py", line 105, in <listcomp>
+    pred = [self(x) for _ in range(self.n_sample)]
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/dgmr/DGMR.py", line 80, in forward
+    return self.generator(x)
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/dgmr/models/Generator.py", line 115, in forward
+    x1 = self.gru_layer2[t](g, x1)
+  File "/home/r09521601/mlenv/lib64/python3.6/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/r09521601/dgmr/layers/ConvGRU.py", line 44, in forward
+    h_next = h * (1-update) + out * update #h=384, update=384, out=384, update=384
+RuntimeError: CUDA out of memory. Tried to allocate 20.00 MiB (GPU 1; 31.75 GiB total capacity; 30.02 GiB already allocated; 3.75 MiB free; 30.05 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+
+/share/var/spool/slurm/d/hild/job20926/slurm_script: line 23: 184092 Killed                  python3 train.py

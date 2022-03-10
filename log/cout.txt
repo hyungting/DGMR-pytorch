@@ -1,0 +1,15 @@
+
+============================ Messages from Goddess============================
+ * Job starting from: Thu Mar 10 15:30:52 CST 2022
+ * Job ID : 20926
+ * Job name : DGMR
+ * Job partition : v100-32g
+ * Nodes : 1
+ * Cores : 8
+ * Working directory: ~/dgmr
+===============================================================================
+
+Validation sanity check: 0it [00:00, ?it/s]Validation sanity check:   0%|          | 0/2 [00:00<?, ?it/s]Validation sanity check:  50%|█████     | 1/2 [08:04<08:04, 484.29s/it]Validation sanity check: 100%|██████████| 2/2 [08:20<00:00, 208.76s/it]                                                                       Training: 0it [00:00, ?it/s]Training:   0%|          | 0/205 [00:00<?, ?it/s]Epoch 0:   0%|          | 0/205 [00:00<?, ?it/s] 
+============================ Messages from Goddess============================
+ * Job ended at : Thu Mar 10 16:13:01 CST 2022
+===============================================================================
