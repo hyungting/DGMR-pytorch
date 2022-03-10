@@ -50,6 +50,8 @@ class DGMR(pl.LightningModule):
         
         # TODO: ADD CONFIG
 
+        self.save_hyperparameters()
+
         self.generator = Generator(
             in_step = self.in_step,
             out_step = self.out_step,
@@ -64,6 +66,7 @@ class DGMR(pl.LightningModule):
         self.cal_lossD = DiscriminatorLoss(margin=self.margin)
 
         self.automatic_optimization = False
+        torch.autograd.set_detect_anomaly(True)
 
     def prepare_data(self):
         pass
@@ -71,7 +74,7 @@ class DGMR(pl.LightningModule):
     def configure_optimizers(self):
         optim_G = torch.optim.Adam(self.generator.parameters(), lr=self.lr_G, betas=self.beta)
         optim_D = torch.optim.Adam(self.discriminators.parameters(), lr=self.lr_D, betas=self.beta)
-        return [optim_G, optim_D], []
+        return [optim_G, optim_D]
 
     def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
         optimizer.zero_grad(set_to_none=True)
@@ -85,6 +88,7 @@ class DGMR(pl.LightningModule):
         optim_G, optim_D = self.optimizers()
 
         is_last_batch_to_accumulate = (batch_idx + 1) % 2 == 0 or self.trainer.is_last_batch
+        
         ##### TRAIN D #####
         with optim_D.toggle_model(sync_grad=is_last_batch_to_accumulate):
             for _ in range(2):
@@ -96,9 +100,10 @@ class DGMR(pl.LightningModule):
                 loss_D = self.cal_lossD(real_scoreD, True) + self.cal_lossD(fake_scoreD, False)
 
                 self.manual_backward(loss_D)
-            if is_last_batch_to_accumulate:
-                optim_D.zero_grad()
-                optim_D.step()
+                if is_last_batch_to_accumulate:
+                    #print(f"iter: {batch_idx}, optimizing D")
+                    optim_D.zero_grad()
+                    optim_D.step()
 
         ##### TRAIN G #####
         with optim_G.toggle_model(sync_grad=is_last_batch_to_accumulate):
@@ -112,26 +117,28 @@ class DGMR(pl.LightningModule):
 
             self.manual_backward(loss_G)
             if is_last_batch_to_accumulate:
+                #print(f"iter: {batch_idx}, optimizing G")
                 optim_G.zero_grad()
                 optim_G.step()
         
-        if batch_idx == 10:
             pred_title = [f"+{t}min (pred)" for t in range(self.out_step)]
             true_title = [f"+{t}min (true)" for t in range(self.out_step)]
-            #for i, (img_p, img_y) in enumerate(zip(torch.stack(pred, dim=0).mean(), y)):
-            fig = plot_test_image(torch.stack(pred, dim=0).mean()[0], y[0], pred_title, true_title)
-            self.logger.experiment.add_figure(f"train/ image", fig, global_step=self.current_epoch)
 
+        if batch_idx == 0:
+            fig = plot_test_image(torch.stack(pred, dim=0).mean(dim=0)[0], y.detach()[0], pred_title, true_title)
+            self.logger.experiment.add_figure(f"train/ image", fig, global_step=self.current_epoch)
+            
         ##### UPDATE LOGGINGS #####
-        self.log("train_g_loss", loss_G.detach(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log("train_d_loss", loss_D.detach(), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        #self.log("train_g_loss", loss_G.detach(), on_step=True, prog_bar=True)
+        #self.log("train_d_loss", loss_D.detach(), on_step=True, prog_bar=True)
         
-        return {"loss_G": loss_G.detach(), "loss_D": loss_D.detach()}
+        return {"train_loss_G": loss_G.detach(), "train_loss_D": loss_D.detach()}
     
-    def on_train_epoch_end(self, outputs):
-        loss_G = torch.mean(torch.stack([values["loss_G"] for values in outputs]))
-        loss_D = torch.mean(torch.stack([values["loss_D"] for values in outputs]))
+    def training_epoch_end(self, outputs):
+        loss_G = torch.mean(torch.stack([values["train_loss_G"] for values in outputs]))
+        loss_D = torch.mean(torch.stack([values["train_loss_D"] for values in outputs]))
         
+        #self.logger.experiment.add_scalar("progress/ epoch", self.current_epoch, global_step=self.current_epoch)
         self.logger.experiment.add_scalar("train/ g loss", loss_G.detach(), global_step=self.current_epoch)
         self.logger.experiment.add_scalar("train/ d loss", loss_D.detach(), global_step=self.current_epoch)
 
@@ -148,7 +155,7 @@ class DGMR(pl.LightningModule):
             pred_title = [f"+{t}min (pred)" for t in range(self.out_step)]
             true_title = [f"+{t}min (true)" for t in range(self.out_step)]
             #for i, (img_p, img_y) in enumerate(zip(pred, y)):
-            fig = plot_test_image(pred[0], y[0], pred_title, true_title)
+            fig = plot_test_image(pred.detach()[0], y.detach()[0], pred_title, true_title)
             self.logger.experiment.add_figure(f"val/ image", fig, global_step=self.current_epoch)
 
         return {"val_loss_G": loss_G.detach(), "val_loss_D": loss_D.detach()}
@@ -157,8 +164,8 @@ class DGMR(pl.LightningModule):
         val_loss_G = torch.mean(torch.stack([values["val_loss_G"] for values in outputs]))
         val_loss_D = torch.mean(torch.stack([values["val_loss_D"] for values in outputs]))
 
-        self.log("val_g_loss", val_loss_G, on_epoch=True, prog_bar=True, logger=True)
-        self.log("val_d_loss", val_loss_D, on_epoch=True, prog_bar=True, logger=True)
+        #self.log("val_g_loss", val_loss_G, on_epoch=True, prog_bar=True)
+        #self.log("val_d_loss", val_loss_D, on_epoch=True, prog_bar=True)
 
         self.logger.experiment.add_scalar("val/ g loss", val_loss_G, global_step=self.current_epoch)
         self.logger.experiment.add_scalar("val/ d loss", val_loss_D, global_step=self.current_epoch)
