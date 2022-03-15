@@ -91,6 +91,7 @@ def cal_performance(pred, target, thresholds):
     if isinstance(target, torch.tensor):
         target = target.cpu().numpy()
 
+    metrics = dict()
     for th in thresholds:
         output = dict()
         TP, TN, FP, FN = cal_confusion_matrix(pred, target, th)
@@ -103,4 +104,6 @@ def cal_performance(pred, target, thresholds):
         output["MAE"] = cal_MAE(pred, target)
         output["RMSE"] = cal_RMSE(pred, target)
 
-    return 
+        metrics["th"] = output
+
+    return metrics
