@@ -4,7 +4,7 @@ import dask.array as da
 from torchvision import transforms
 
 from DGMR.utils.dataset import RainDataset
-from DGMR.utils.data_parser import Nimrod_parser, min_max_normalizer
+from DGMR.utils.data_parser import *
 
 
 def count_nonzeros(memmap):
@@ -28,6 +28,13 @@ def get_memmap(npy_path, dtype=None, shape=None):
     if isinstance(npy_path, str):
         return np.memmap(npy_path, dtype=dtype, shape=shape)
 
+def get_arguments(
+    params: dict=None
+    ):
+    args = {}
+    for k in params._asdict().keys():
+        args[k.lower()] = params._asdict()[k]
+    return args
 
 def make_dataset(
     cfg,
@@ -41,12 +48,22 @@ def make_dataset(
         shape=eval(cfg.SETTINGS.DATA_SHAPE)
         )
     
-    if cfg.SETTINGS.RAIN_RECORD_PATH is not None:
-        pass
-    rain_record = count_nonzeros(memory_map)
+    #if cfg.SETTINGS.RAIN_RECORD_PATH is not None:
+    # TODO: save record & read record file
     
-    parser = lambda x: Nimrod_parser(x, rain_th=cfg.PARAMS.RAIN_TH, rain2dbz=cfg.PARAMS.CONVERT_TO_DBZ, min_dbz=cfg.PARAMS.MIN_VALUE)
-    normalizer = lambda x: min_max_normalizer(x, min_value=cfg.PARAMS.MIN_VALUE, max_value=cfg.PARAMS.MAX_VALUE)
+    rain_record = count_nonzeros(memory_map)
+
+    parser = None
+    if cfg.PARAMS.PARSER.FUNCTION is not None:
+        parser_name = cfg.PARAMS.PARSER.FUNCTION
+        parser_args = get_arguments(cfg.PARAMS.PARSER.PARAMS)
+        parser = lambda x: eval(parser_name)(x, **parser_args)
+
+    normalizer = None
+    if cfg.PARAMS.NORMALIZER.FUNCTION is not None:
+        normalizer_name = cfg.PARAMS.NORMALIZER.FUNCTION
+        normalizer_args = get_arguments(cfg.PARAMS.NORMALIZER.PARAMS)
+        normalizer = lambda x: eval(normalizer_name)(x, **normalizer_args)
     
     if mode == "train":
         transform = transforms.Compose([

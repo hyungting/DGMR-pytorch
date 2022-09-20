@@ -6,11 +6,17 @@ PARAMS:
   OUTPUT_FRAME: 6
   COVERAGE: 0.5
   CROP_SIZE: 256
-  RAIN_TH: 0.01
-  CONVERT_TO_DBZ: True
-  NORMALIZE: True
-  MIN_VALUE: -9
-  MAX_VALUE: 60
+  PARSER:
+    FUNCTION: Nimrod_parser
+    PARAMS:
+      RAIN_TH: 0.01
+      RAIN2DBZ: True
+      MIN_VALUE: -9
+  NORMALIZER:
+    FUNCTION: min_max_normalizer
+    PARAMS:
+      MIN_VALUE: -9
+      MAX_VALUE: 60
 GENERATOR:
   MODEL: 
     FUNCTION: DGMRGenerator
@@ -74,4 +80,4 @@ SETTINGS:
   RAIN_RECORD_PATH:
 TENSORBOARD:
   SAVE_DIR: /home/yihan/yh
-  VERSION: EVAL
+  VERSION: DGMR

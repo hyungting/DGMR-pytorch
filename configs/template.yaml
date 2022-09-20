@@ -1,22 +1,22 @@
 PARAMS:
-  BATCH_SIZE: 8
-  EPOCH: 500
-  N_SAMPLE: 1
-  INPUT_FRAME: 4
-  OUTPUT_FRAME: 6
-  COVERAGE: 0.75
-  CROP_SIZE: 256
+  BATCH_SIZE: int
+  EPOCH: int
+  N_SAMPLE: int
+  INPUT_FRAME: int
+  OUTPUT_FRAME: int
+  COVERAGE: float
+  CROP_SIZE: int
   PARSER:
-    FUNCTION: Nimrod_parser
+    FUNCTION: parser_function
     PARAMS:
-      RAIN_TH: 0.01
-      RAIN2DBZ: True
-      MIN_VALUE: -9
-  NORMALIZER:
-    FUNCTION:
+      ARG1:
+      ARG2:
+      ARG3:
+  NORMALIZER: normalizer_function
+    FUNCTION: 
     PARAMS:
-      MIN_VALUE: -9
-      MAX_VALUE: 60
+      ARG1:
+      ARG2:
 GENERATOR:
   MODEL: 
     FUNCTION: DGMRGenerator
@@ -30,24 +30,30 @@ GENERATOR:
   OPTIMIZER:
     FUNCTION: Adam
     PARAMS:
-      LR: 0.00005
+      LR: 0.0005
       MOMENTUM: 0.9
       BETA: [0., 0.999]
-      WEIGHT_DECAY:
   SCHEDULER:
     FUNCTION: 
     PARAMS:
 DISCRIMINATOR:
-  ITER:
+  ITER: 2
   MODEL:
-    FUNCTION:
+    FUNCTION: DGMRDiscriminators
     PARAMS:
+      N_FRAME: 8
+      CROP_SIZE: 128
   LOSS:
-    FUNCTION:
+    FUNCTION: HingeLoss
     PARAMS:
+      MARGIN: 1.
+      LABEL_SMOOTHING: False
   OPTIMIZER:
-    FUNCTION:
+    FUNCTION: Adam
     PARAMS:
+      LR: 0.0002
+      MOMENTUM: 0.9
+      BETA: [0., 0.999]
   SCHEDULER:
     FUNCTION:
     PARAMS:
@@ -68,10 +74,10 @@ SETTINGS:
   IMPORT_CKPT_PATH: 
   NUM_GPUS: 1
   RNG_SEED: 0
-  DATA_PATH: /home/yihan/yh/research/Nimrod/Nimrod_2018.dat
+  DATA_PATH: /home/yihan/yh/research/Nimrod/Nimrod_2016.dat
   DATA_TYPE: int16
-  DATA_SHAPE: (105120, 512, 512)
+  DATA_SHAPE: (288*366, 512, 512)
   RAIN_RECORD_PATH:
 TENSORBOARD:
   SAVE_DIR: /home/yihan/yh
-  VERSION: DGMR-NGAN
+  VERSION: EVAL

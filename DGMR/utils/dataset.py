@@ -18,8 +18,8 @@ class RainDataset(Dataset):
         rain_coverage: float, the accepted rainfall coverage of the first input frame
         in_step: int, the number of input frames.
         out_step: int, the number of output frames.
-        parser: function,
-        normalizer: function,
+        parser: function
+        normalizer: function
         transform: transforms.Compose, the function of data augmentation
     """
     def __init__(

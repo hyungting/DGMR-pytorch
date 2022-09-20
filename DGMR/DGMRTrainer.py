@@ -14,7 +14,7 @@ from DGMR.utils.plot import plot_rain_field, plot_metric_boxplot, plot_metric_me
 from DGMR.utils.metrics import Evaluator
 from DGMR.utils.config import ConfigException
 
-class Trainer(pl.LightningModule):
+class DGMRTrainer(pl.LightningModule):
     def __init__(self, cfg, **kwargs):
         super().__init__()
         self.cfg = cfg
@@ -28,9 +28,9 @@ class Trainer(pl.LightningModule):
         self.evaluator = Evaluator(
             thresholds=cfg.EVALUATION.THRESHOLDS,
             pooling_scales=cfg.EVALUATION.POOLING_SCALES,
-            norm=cfg.PARAMS.NORMALIZE,
-            min_value=cfg.PARAMS.MIN_VALUE,
-            max_value=cfg.PARAMS.MAX_VALUE,
+            norm=False if cfg.PARAMS.NORMALIZER is None else True,
+            min_value=None if cfg.PARAMS.NORMALIZER is None else cfg.PARAMS.NORMALIZER.PARAMS.MIN_VALUE,
+            max_value=None if cfg.PARAMS.NORMALIZER is None else cfg.PARAMS.NORMALIZER.PARAMS.MAX_VALUE,
             dbz_to_rain=False)#cfg.PARAMS.CONVERT_TO_DBZ)
 
         self.thresholds = cfg.EVALUATION.THRESHOLDS

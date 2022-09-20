@@ -11,7 +11,7 @@ class Evaluator:
         self,
         thresholds: list=None,
         pooling_scales: list=None,
-        norm: boolean=True,
+        norm: boolean=False,
         min_value: int=None,
         max_value: int=None,
         dbz_to_rain: boolean=True
@@ -19,9 +19,10 @@ class Evaluator:
 
         self.thresholds = thresholds
         self.pooling_scales = pooling_scales
-        self.norm = norm
-        self.min_value = min_value
-        self.max_value = max_value
+        self.norm = True if norm is not None else False
+        if self.norm:
+            self.min_value = min_value
+            self.max_value = max_value
         self.dbz_to_rain = dbz_to_rain
         
         self.init_metrics()
