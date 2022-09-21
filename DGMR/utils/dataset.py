@@ -80,6 +80,8 @@ class RainDataset(Dataset):
         else:
             img = self.memory_map[map_index: map_index+self.in_step+self.out_step]
 
+        if not isinstance(img, np.ndarray):
+            img = np.array(img)
         img = torch.cat([self.transform(_) for _ in img], dim=0)
         img = self.parser(img) if self.parser else img
         img = self.normalizer(img) if self.normalizer else img

@@ -128,28 +128,16 @@ class DGMRTrainer(pl.LightningModule):
         )
 
     def get_optimizer(self, optimizer, param):
-        if optimizer == "SGD":
-            return lambda parameters: torch.optim.SGD(parameters, lr=param.LR, momentum=param.MOMENTUM)
-        elif optimizer == "Adam":
-            return lambda parameters: torch.optim.Adam(parameters, lr=param.LR, betas=param.BETA)
-        elif optimizer == "AdamW":
-            return lambda parameters: torch.optim.AdamW(parameters, lr=param.LR, betas=param.BETA, weight_decay=param.WEIGHT_DECAY)
-        else:
-            return lambda parameters: eval(f"torch.optim.{optimizer}({parameters}, lr={param.LR})")    
-        raise ConfigException(f"Optimizer '{loss}' is not supported.")
+        kwargs = {}
+        for k in param._asdict().keys():
+            kwargs[k.lower()] = param._asdict()[k]
+        return lambda parameters: eval(f"torch.optim.{optimizer}")(parameters, **kwargs)
 
     def get_scheduler(self, scheduler, param):
-        if scheduler == "StepLR":
-            return lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=param.STEP_SIZE, gamma=param.GAMMA)
-        elif scheduler == "CosineAnnealingLR":
-            return lambda optimizer: torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=param.T_MAX)
-        elif scheduler == "ReduceLROnPlateau":
-            return lambda optimizer: {
-                "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode=param.MODE, factor=param.FACTOR, patience=param.PATIENCE, threshold=param.THRESHOLD),
-                "monitor": param.METRIC}
-        else:
-            return lambda optimizer: eval(f"torch.optim.lr_scheduler.{scheduler}({optimizer})")
-        raise ConfigException(f"Scheduler '{scheduler}' is not supported.")
+        kwargs = {}
+        for k in param._asdict().keys():
+            kwargs[k.lower()] = param._asdict()[k]
+        return lambda optimizer: eval(f"torch.optim.lr_scheduler.{scheduler}")(optimizer, **kwargs)
 
     def configure_optimizers(self):
         optim_G = self.get_optimizer(
@@ -465,6 +453,6 @@ if __name__ == "__main__":
         logger=tb_logger
         )
 
-    model = Experiment(cfg)
+    model = DGMRTrainer(cfg)
     print(model.hparams)
     #trainer.fit(model)

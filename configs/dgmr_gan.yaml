@@ -31,8 +31,7 @@ GENERATOR:
     FUNCTION: Adam
     PARAMS:
       LR: 0.0005
-      MOMENTUM: 0.9
-      BETA: [0., 0.999]
+      BETAS: [0., 0.999]
   SCHEDULER:
     FUNCTION: 
     PARAMS:
@@ -52,8 +51,7 @@ DISCRIMINATOR:
     FUNCTION: Adam
     PARAMS:
       LR: 0.0002
-      MOMENTUM: 0.9
-      BETA: [0., 0.999]
+      BETAS: [0., 0.999]
   SCHEDULER:
     FUNCTION:
     PARAMS:
@@ -74,9 +72,9 @@ SETTINGS:
   IMPORT_CKPT_PATH: 
   NUM_GPUS: 1
   RNG_SEED: 0
-  DATA_PATH: /home/yihan/yh/research/Nimrod/Nimrod_2016.dat
+  DATA_PATH: ["/home/yihan/yh/research/Nimrod/Nimrod_2019.dat", "/home/yihan/yh/research/Nimrod/Nimrod_2020.dat"]
   DATA_TYPE: int16
-  DATA_SHAPE: (288*366, 512, 512)
+  DATA_SHAPE: [[105120, 512, 512], [105408, 512, 512]]
   RAIN_RECORD_PATH:
 TENSORBOARD:
   SAVE_DIR: /home/yihan/yh
