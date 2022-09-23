@@ -102,12 +102,14 @@ def make_dataset(
         parser_name = cfg.PARAMS.PARSER.FUNCTION
         parser_args = get_arguments(cfg.PARAMS.PARSER.PARAMS)
         parser = lambda x: eval(parser_name)(x, **parser_args)
+        os.system(f"echo Parser: {parser_name}")
 
     normalizer = None
     if cfg.PARAMS.NORMALIZER.FUNCTION is not None:
         normalizer_name = cfg.PARAMS.NORMALIZER.FUNCTION
         normalizer_args = get_arguments(cfg.PARAMS.NORMALIZER.PARAMS)
         normalizer = lambda x: eval(normalizer_name)(x, **normalizer_args)
+        os.system(f"echo Normalizer: {normalizer_name}")
     
     if mode == "train":
         transform = transforms.Compose([
