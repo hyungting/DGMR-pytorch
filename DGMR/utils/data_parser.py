@@ -1,14 +1,16 @@
 import torch
 
-def Nimrod_parser(
+def data_parser(
     array: torch.tensor=None,
+    offset: float=1,
+    scale: float=1,
     rain_th: float=0.01,
     rain2dbz: bool=True,
     min_value: float=None,
     *args,
     **kwargs
     ):
-    array = array / 32
+    array = array / scale + offset
     if kwargs:
         for k, v in kwargs.items():
             exec(f"{k}={v}")

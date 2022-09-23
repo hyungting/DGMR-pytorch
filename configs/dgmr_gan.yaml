@@ -7,8 +7,10 @@ PARAMS:
   COVERAGE: 0.5
   CROP_SIZE: 256
   PARSER:
-    FUNCTION: Nimrod_parser
+    FUNCTION: data_parser
     PARAMS:
+      SCALE: 32
+      OFFSET: 0
       RAIN_TH: 0.01
       RAIN2DBZ: True
       MIN_VALUE: -9
@@ -30,7 +32,7 @@ GENERATOR:
   OPTIMIZER:
     FUNCTION: Adam
     PARAMS:
-      LR: 0.0005
+      LR: 0.00005
       BETAS: [0., 0.999]
   SCHEDULER:
     FUNCTION: 
@@ -51,7 +53,7 @@ DISCRIMINATOR:
     FUNCTION: Adam
     PARAMS:
       LR: 0.0002
-      BETAS: [0., 0.999]
+      BETAS: [0.9, 0.999]
   SCHEDULER:
     FUNCTION:
     PARAMS:
@@ -72,9 +74,9 @@ SETTINGS:
   IMPORT_CKPT_PATH: 
   NUM_GPUS: 1
   RNG_SEED: 0
-  DATA_PATH: ["/home/yihan/yh/research/Nimrod/Nimrod_2019.dat", "/home/yihan/yh/research/Nimrod/Nimrod_2020.dat"]
+  DATA_PATH: "/home/yihan/yh/research/Nimrod/Nimrod_2018.dat"
   DATA_TYPE: int16
-  DATA_SHAPE: [[105120, 512, 512], [105408, 512, 512]]
+  DATA_SHAPE: [105120, 512, 512]
   RAIN_RECORD_PATH:
 TENSORBOARD:
   SAVE_DIR: /home/yihan/yh

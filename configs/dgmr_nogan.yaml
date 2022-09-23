@@ -7,13 +7,15 @@ PARAMS:
   COVERAGE: 0.75
   CROP_SIZE: 256
   PARSER:
-    FUNCTION: Nimrod_parser
+    FUNCTION: data_parser
     PARAMS:
+      SCALE: 32
+      OFFSET: 0
       RAIN_TH: 0.01
       RAIN2DBZ: True
       MIN_VALUE: -9
   NORMALIZER:
-    FUNCTION:
+    FUNCTION: min_max_normalizer
     PARAMS:
       MIN_VALUE: -9
       MAX_VALUE: 60
@@ -31,9 +33,7 @@ GENERATOR:
     FUNCTION: Adam
     PARAMS:
       LR: 0.00005
-      MOMENTUM: 0.9
-      BETA: [0., 0.999]
-      WEIGHT_DECAY:
+      BETAS: [0., 0.999]
   SCHEDULER:
     FUNCTION: 
     PARAMS:
@@ -70,7 +70,7 @@ SETTINGS:
   RNG_SEED: 0
   DATA_PATH: /home/yihan/yh/research/Nimrod/Nimrod_2018.dat
   DATA_TYPE: int16
-  DATA_SHAPE: (105120, 512, 512)
+  DATA_SHAPE: [105120, 512, 512]
   RAIN_RECORD_PATH:
 TENSORBOARD:
   SAVE_DIR: /home/yihan/yh
