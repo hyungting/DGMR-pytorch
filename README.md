@@ -19,11 +19,11 @@ Execute ```pip install -r requirements.txt``` to install required packages (exce
 For installing torch, please check out https://pytorch.org/get-started/locally/ to figure out the version that works on your device.
 
 ## Data preparation
-**Step 1**: Read your own data.
-**Step 2**: Store your data into ```numpy.ndarray``` with proper data type (e.g. ```int16```, ```float64```).
-**Step 3**: Make sure your data are sorted by time.
-**Step 4**: Note the array's storing *data type* and *data shape*, these information will be needed in config file.
-**Step 5**: Save the array with the format ```.npy```.
+- **Step 1**: Read your own data.
+- **Step 2**: Store your data into ```numpy.ndarray``` with proper data type (e.g. ```int16```, ```float64```).
+- **Step 3**: Make sure your data are sorted by time.
+- **Step 4**: Note the array's storing *data type* and *data shape*, these information will be needed in config file.
+- **Step 5**: Save the array with the format ```.npy```.
 
 For more information, please check out numpy's documentation.
 - Data types
@@ -37,10 +37,11 @@ For more information, please check out numpy's documentation.
 
 ## How to run DGMR?
 
-**Step 1**: Prepare data (see **Data Preparation**).
-**Step 2**: Prepare rain records ```.csv``` file. (optional)
+- **Step 1**: Prepare data (see **Data Preparation**).
+- **Step 2**: Prepare rain records ```.csv``` file. (optional)
 If rain records are not prepared, it will be calculated automatically in our program. 
 Example of csv:    
+
 | index | nonzeros                        |
 | ----- | ------------------------------- |
 | 0     | number of nonzeros of image 0   |
@@ -48,16 +49,16 @@ Example of csv:
 | ...   | number of nonzeros of images    |
 | N-1   | number of nonzeros of image N-1 |
 
-**Step 3**: Prepare config file.
+- **Step 3**: Prepare config file.
 Please see configs/README.md 
 
-**Step 4**: Execute the code
-- train
-    ```python3 main.py -c /path/to/your/config -m train```
-- validate
-    ```python3 main.py -c /path/to/your/config -m val```
-- test
-    ```python3 main.py -c /path/to/your/config -m test```
+- **Step 4**: Execute the code
+    - train
+        ```python3 main.py -c /path/to/your/config -m train```
+    - validate
+        ```python3 main.py -c /path/to/your/config -m val```
+    - test
+        ```python3 main.py -c /path/to/your/config -m test```
     
 ## Tensorboard
 Execute this command to see training results.
