@@ -53,12 +53,9 @@ Example of csv:
 Please see configs/README.md 
 
 - **Step 4**: Execute the code
-    - train
-        ```python3 main.py -c /path/to/your/config -m train```
-    - validate
-        ```python3 main.py -c /path/to/your/config -m val```
-    - test
-        ```python3 main.py -c /path/to/your/config -m test```
+    - train: ```python3 main.py -c /path/to/your/config -m train```
+    - validate: ```python3 main.py -c /path/to/your/config -m val```
+    - test: ```python3 main.py -c /path/to/your/config -m test```
     
 ## Tensorboard
 Execute this command to see training results.
