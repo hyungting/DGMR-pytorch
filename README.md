@@ -3,15 +3,14 @@ An implementation of Deep Generative Model of Radars from DeepMind in PyTorch
 
 ## Dependencies
 
-- python==3.8
-- numpy==1.23.3
-- pytorch_lightning==1.7.7
-- torchvision==0.13.1
-- pandas==1.5.0
+- dask==2022.9.1
+- matplotlib==3.5.1
+- numba==0.55.1
+- numpy==1.21.0
+- pandas==1.4.1
 - properscoring==0.1
-- matplotlib==3.6.1
-- dask==2022.9.2
-- numba==0.56.2
+- pytorch-lightning==1.5.10
+- torchvision==0.11.3
 - torch
 
 Execute ```pip install -r requirements.txt``` to install required packages (except for torch).
