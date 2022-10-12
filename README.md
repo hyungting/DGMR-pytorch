@@ -22,7 +22,7 @@ For installing torch, please check out https://pytorch.org/get-started/locally/ 
 - **Step 2**: Store your data into ```numpy.ndarray``` with proper data type (e.g. ```int16```, ```float64```).
 - **Step 3**: Make sure your data are sorted by time.
 - **Step 4**: Note the array's storing *data type* and *data shape*, these information will be needed in config file.
-- **Step 5**: Save the array with the format ```.npy```.
+- **Step 5**: Save the array with the format ```.dat```. (No headers please!)
 
 For more information, please check out numpy's documentation.
 - Data types
