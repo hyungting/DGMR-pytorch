@@ -11,7 +11,7 @@ An implementation of Deep Generative Model of Radars from DeepMind in PyTorch
 - properscoring==0.1
 - pytorch-lightning==1.5.10
 - torchvision==0.11.3
-- torch
+- pytorch
 
 Execute ```pip install -r requirements.txt``` to install required packages (except for torch).
 
