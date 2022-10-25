@@ -18,7 +18,8 @@ Execute ```pip install -r requirements.txt``` to install required packages (exce
 For installing torch, please check out https://pytorch.org/get-started/locally/ to figure out the version that works on your device.
 
 ## Workflow
-![image](https://user-images.githubusercontent.com/51833239/197740269-52a0baef-6a66-40cd-a2b7-ecca16d25f42.png)
+<img width="860" alt="image" src="https://user-images.githubusercontent.com/51833239/197740656-91621804-2096-47cd-9f3b-1547cb45d066.png">
+
 
 ## Data preparation
 - **Step 1**: Read your own data.
@@ -38,7 +39,6 @@ For more information, please check out numpy's documentation.
     - W: width of rainfall images
 
 ## How to run DGMR?
-
 - **Step 1**: Prepare data (see **Data Preparation**).
 - **Step 2**: Prepare rain records ```.csv``` file. (optional)
 If rain records are not prepared, it will be calculated automatically in our program. 
