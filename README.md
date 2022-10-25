@@ -17,6 +17,9 @@ Execute ```pip install -r requirements.txt``` to install required packages (exce
 
 For installing torch, please check out https://pytorch.org/get-started/locally/ to figure out the version that works on your device.
 
+## Workflow
+![image](https://user-images.githubusercontent.com/51833239/197740269-52a0baef-6a66-40cd-a2b7-ecca16d25f42.png)
+
 ## Data preparation
 - **Step 1**: Read your own data.
 - **Step 2**: Store your data into ```numpy.ndarray``` with proper data type (e.g. ```int16```, ```float64```).
