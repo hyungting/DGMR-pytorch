@@ -27,11 +27,7 @@ class DGMRTrainer(pl.LightningModule):
 
         self.evaluator = Evaluator(
             thresholds=cfg.EVALUATION.THRESHOLDS,
-            pooling_scales=cfg.EVALUATION.POOLING_SCALES,
-            norm=False if cfg.PARAMS.NORMALIZER is None else True,
-            min_value=None if cfg.PARAMS.NORMALIZER is None else cfg.PARAMS.NORMALIZER.PARAMS.MIN_VALUE,
-            max_value=None if cfg.PARAMS.NORMALIZER is None else cfg.PARAMS.NORMALIZER.PARAMS.MAX_VALUE,
-            dbz_to_rain=False)#cfg.PARAMS.CONVERT_TO_DBZ)
+            pooling_scales=cfg.EVALUATION.POOLING_SCALES)
 
         self.thresholds = cfg.EVALUATION.THRESHOLDS
         self.pooling_scales = cfg.EVALUATION.POOLING_SCALES

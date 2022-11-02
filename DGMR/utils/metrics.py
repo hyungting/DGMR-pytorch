@@ -1,5 +1,4 @@
 import math
-from xmlrpc.client import boolean
 import torch
 import numpy as np
 import properscoring as ps
@@ -11,19 +10,12 @@ class Evaluator:
         self,
         thresholds: list=None,
         pooling_scales: list=None,
-        norm: boolean=False,
-        min_value: int=None,
-        max_value: int=None,
-        dbz_to_rain: boolean=True
+        parser=None
         ):
 
         self.thresholds = thresholds
         self.pooling_scales = pooling_scales
-        self.norm = True if norm is not None else False
-        if self.norm:
-            self.min_value = min_value
-            self.max_value = max_value
-        self.dbz_to_rain = dbz_to_rain
+        self.parser = parser
         
         self.init_metrics()
     
@@ -106,15 +98,6 @@ class Evaluator:
         Root Mean-Square Error = { E[(pred - target) ** 2] } ** 0.5
         """
         return torch.sqrt(self.cal_MSE(pred, target))
-    
-    def denormalize(self, x, min_value, max_value):
-        return x * (max_value - min_value) + min_value
-
-    def dbz2rain(self, x, min_value):
-        x[x>min_value] = ((10 ** (x[x>min_value] / 10)) / 200) ** (1 / 1.6)
-        x[x<=min_value] = 0
-        return x
-
 
     def calculate_all(self, pred, target):
         """
@@ -138,13 +121,9 @@ class Evaluator:
         if isinstance(target, torch.Tensor):
             target = torch.nan_to_num(target, nan=0)
 
-        if self.norm:
-            pred = self.denormalize(pred, min_value=self.min_value, max_value=self.max_value)
-            target = self.denormalize(target, min_value=self.min_value, max_value=self.max_value)
-       
-        if self.dbz_to_rain:
-            pred = self.dbz2rain(pred, min_value=self.min_value)
-            target = self.dbz2rain(target, min_value=self.min_value)
+        if self.parser is not None:
+            pred = self.parser(pred)
+            target = self.parser(target)
 
         for scale in self.pooling_scales:
             self.CRPS_avg[scale] = self.cal_CRPS(
@@ -163,10 +142,6 @@ class Evaluator:
             self.CSI[th] = self.cal_CSI(TP=TP, FP=FP, FN=FN)
             self.POD[th] = self.cal_POD(TP=TP, FN=FN)
             self.FAR[th] = self.cal_FAR(TP=TP, FP=FP)
-
-        #if self.dbz_to_rain:
-        #    pred = self.dbz2rain(pred, min_value=self.min_value)
-        #    target = self.dbz2rain(target, min_value=self.min_value)
 
         self.MSE = self.cal_MSE(pred=pred, target=target)
         self.MAE = self.cal_MAE(pred=pred, target=target)

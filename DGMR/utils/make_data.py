@@ -113,15 +113,13 @@ def make_dataset(
     
     if mode == "train":
         transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.RandomCrop(cfg.PARAMS.CROP_SIZE),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            transforms.RandomCrop(cfg.PARAMS.CROP_SIZE)
         ])
     elif mode == "test" or mode == "val":
         transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.CenterCrop(cfg.PARAMS.CROP_SIZE),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            transforms.CenterCrop(cfg.PARAMS.CROP_SIZE)
         ])
     
     dataset = RainDataset(

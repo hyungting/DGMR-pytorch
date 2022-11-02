@@ -19,7 +19,6 @@ def data_parser(
         array[array<=rain_th] = min_value
     return array
 
-
 def min_max_normalizer(
     array: torch.tensor=None,
     min_value: float=None,

@@ -65,7 +65,6 @@ class RainDataset(Dataset):
             return transform
         else:
             return transforms.Compose([
-                transforms.ToPILImage(),
                 transforms.ToTensor()
                 ])
 
@@ -82,10 +81,10 @@ class RainDataset(Dataset):
 
         if not isinstance(img, np.ndarray):
             img = np.array(img)
-        img = torch.cat([self.transform(_) for _ in img], dim=0)
+        img = img.transpose(1, 2, 0)
+        img = self.transform(img)
         img = self.parser(img) if self.parser else img
         img = self.normalizer(img) if self.normalizer else img
-        
         x = img[:self.in_step, ...]
         y = img[self.in_step:, ...]
 
