@@ -47,6 +47,7 @@ class RainDataset(Dataset):
 
         self.nonzeros = self.memory_map.shape[1] * self.memory_map.shape[2] * self.rain_coverage
         self.target_indices = np.where(self.rain_record >= self.nonzeros)[0]
+        np.random.shuffle(self.target_indices)
 
     def get_parser(self, parser):
         if parser is not None:
@@ -87,6 +88,9 @@ class RainDataset(Dataset):
         img = self.normalizer(img) if self.normalizer else img
         x = img[:self.in_step, ...]
         y = img[self.in_step:, ...]
+
+        if index == len(self.target_indices) - 1:
+            np.random.shuffle(self.target_indices)
 
         return (x, y)
 

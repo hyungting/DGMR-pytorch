@@ -3,9 +3,11 @@ PARAMS:
   EPOCH: 1500
   N_SAMPLE: 1
   INPUT_FRAME: 4
-  OUTPUT_FRAME: 6
-  COVERAGE: 0.5
-  CROP_SIZE: 256
+  OUTPUT_FRAME: 15
+  COVERAGE: 0.6
+  INPUT_SIZE: 256
+  N_FRAME: 8
+  CROP_SIZE: 128
   PARSER:
     FUNCTION: data_parser
     PARAMS:
@@ -20,30 +22,22 @@ PARAMS:
       MIN_VALUE: -9
       MAX_VALUE: 60
 GENERATOR:
-  MODEL: 
-    FUNCTION: DGMRGenerator
-    PARAMS:
   LOSS:
     FUNCTION: PixelWiseRegularizer
     PARAMS:
-      LAMBDA: 20
-      MIN_VALUE: 0.2
+      LAMBDA: 30
+      MIN_VALUE: 0.5
       MAX_VALUE: 1.5
   OPTIMIZER:
     FUNCTION: Adam
     PARAMS:
-      LR: 0.00005
+      LR: 0.00002
       BETAS: [0., 0.999]
   SCHEDULER:
     FUNCTION: 
     PARAMS:
 DISCRIMINATOR:
-  ITER: 2
-  MODEL:
-    FUNCTION: DGMRDiscriminators
-    PARAMS:
-      N_FRAME: 8
-      CROP_SIZE: 128
+  ITER: 5
   LOSS:
     FUNCTION: HingeLoss
     PARAMS:
@@ -52,14 +46,15 @@ DISCRIMINATOR:
   OPTIMIZER:
     FUNCTION: Adam
     PARAMS:
-      LR: 0.0002
-      BETAS: [0.9, 0.999]
+      LR: 0.0001
+      BETAS: [0.3, 0.999]
   SCHEDULER:
     FUNCTION:
     PARAMS:
 EVALUATION:
   THRESHOLDS: [5, 10, 20, 30]
   POOLING_SCALES: [1, 4, 16]
+  PARSER:
 TRAIN:
   VAL_PERIOD: 5
   CHECKPOINT_PERIOD: 5
@@ -71,13 +66,14 @@ DATALOADER:
   NUM_WORKERS: 32
   PIN_MEMORY: True
 SETTINGS:
-  IMPORT_CKPT_PATH: 
+  IMPORT_CKPT_PATH:
   NUM_GPUS: 1
   RNG_SEED: 0
-  DATA_PATH: "/home/yihan/yh/research/Nimrod/Nimrod_2018.dat"
+  DATA_PATH: ["/home/wangup/Documents/Nimrod/Nimrod_2016.dat", "/home/wangup/Documents/Nimrod/Nimrod_2017.dat", "/home/wangup/Documents/Nimrod/Nimrod_2018.dat"]
   DATA_TYPE: int16
-  DATA_SHAPE: [105120, 512, 512]
-  RAIN_RECORD_PATH:
+  DATA_SHAPE: [[105408, 512, 512], [105120, 512, 512], [105120, 512, 512]]
+  RAIN_RECORD_PATH: /home/yunting/Documents/research/DGMR-pytorch/rain_record_Nimrod_2016_Nimrod_2017_Nimrod_2018.csv
 TENSORBOARD:
-  SAVE_DIR: /home/yihan/yh
-  VERSION: DGMR
+  SAVE_DIR: ./
+  NAME: DGMRGenerator
+  VERSION: DGMR-GAN-INSPECT

@@ -59,11 +59,11 @@ class Identity(nn.Module):
 
 def random_crop(x, size=128, padding=False):
     B, C, H, W = x.shape
-    if not padding:
+    if padding:
+        # TODO: add padding=True method
+        pass
+    else:
         h_idx = random.randint(0, H-size)
         w_idx = random.randint(0, W-size)
         x = x[:, :, h_idx:h_idx+size, w_idx:w_idx+size]
-    else:
-        # TODO: add padding=True method
-        pass
     return x

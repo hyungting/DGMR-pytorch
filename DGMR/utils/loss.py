@@ -37,36 +37,13 @@ class PixelWiseRegularizer(nn.Module):
         loss = difference * weight
         return self.magnitude * loss.mean()
 
-class HingeLoss(nn.Module):
-    """
-    Args:
-        cfg: config format tranformed by config.py
-        margin: int
-        label_smoothing: bool
-    """
-    def __init__(
-        self,
-        cfg=None,
-        margin: int=1,
-        label_smoothing: bool=False
-        ):
-        super().__init__()
-        if cfg is not None:
-            self.margin = cfg.MARGIN
-            self.label_smoothing = cfg.LABEL_SMOOTHING
-        else:
-            self.margin = margin
-            self.label_smoothing = label_smoothing
+def HingeLoss(pred, sign, margin=1.):
+    loss = F.relu(margin - sign * pred)
+    return loss.mean()
 
-    def forward(self, pred, validity):
-        if self.label_smoothing:
-            prob = 0.1 * torch.randint(low=8, high=12, size=pred.shape, device=pred.device)
-            pred = prob * pred
-        if validity:
-            loss = F.relu(self.margin - pred)
-        else:
-            loss = F.relu(self.margin + pred)
-        return Variable(loss.mean(), requires_grad=True)
+def HingeLossG(pred):
+    return -torch.mean(pred)
 
 if __name__ == "__main__":
+    
     pass

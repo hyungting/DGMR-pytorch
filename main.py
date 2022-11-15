@@ -14,7 +14,7 @@ def validate(cfg):
 
     tb_logger = TensorBoardLogger(
         cfg.TENSORBOARD.SAVE_DIR,
-        name=cfg.GENERATOR.MODEL.FUNCTION,
+        name=cfg.TENSORBOARD.NAME,
         version=cfg.TENSORBOARD.VERSION,
         log_graph=False,
         default_hp_metric=True
@@ -37,7 +37,7 @@ def train(cfg):
 
     tb_logger = TensorBoardLogger(
         cfg.TENSORBOARD.SAVE_DIR,
-        name=cfg.GENERATOR.MODEL.FUNCTION,
+        name=cfg.TENSORBOARD.NAME,
         version=cfg.TENSORBOARD.VERSION,
         log_graph=False,
         default_hp_metric=True
@@ -63,7 +63,7 @@ def test(cfg):
 
     tb_logger = TensorBoardLogger(
         cfg.TENSORBOARD.SAVE_DIR,
-        name=cfg.GENERATOR.MODEL.FUNCTION,
+        name=cfg.TENSORBOARD.NAME,
         version=cfg.TENSORBOARD.VERSION,
         log_graph=False,
         default_hp_metric=True

@@ -29,7 +29,7 @@ class DBlock(nn.Module):
         ):
         super(DBlock, self).__init__()
         Scaling = (nn.AvgPool2d(2, 2) if downsample else Identity())
-        ReLU = (nn.ReLU() if relu else Identity())
+        ReLU = (nn.LeakyReLU(0.2) if relu else Identity()) #nn.ReLU() if relu else Identity())
 
         self.conv1x1 = nn.Sequential(
                 spectral_norm(nn.Conv2d(in_channels, out_channels, 1, 1, 0), eps=1e-4),
@@ -38,7 +38,7 @@ class DBlock(nn.Module):
         self.conv3x3 = nn.Sequential(
                 ReLU,
                 spectral_norm(nn.Conv2d(in_channels, in_channels, 3, 1, 1), eps=1e-4),
-                nn.ReLU(inplace=True),
+                nn.LeakyReLU(0.2), #nn.ReLU(inplace=True),
                 spectral_norm(nn.Conv2d(in_channels, out_channels, 3, 1, 1), eps=1e-4),
                 Scaling
                 )
@@ -68,7 +68,7 @@ class D3Block(nn.Module):
         ):
         super(D3Block, self).__init__()
         Scaling = (nn.AvgPool3d(2, 2) if downsample else Identity())
-        ReLU = (nn.ReLU() if relu else Identity())
+        ReLU = (nn.LeakyReLU(0.2) if relu else Identity()) #nn.ReLU() if relu else Identity())
 
         self.conv1x1 = nn.Sequential(
                 spectral_norm(nn.Conv3d(in_channels, out_channels, 1, 1, "same"), eps=1e-4),
@@ -77,7 +77,7 @@ class D3Block(nn.Module):
         self.conv3x3 = nn.Sequential(
                 ReLU,
                 spectral_norm(nn.Conv3d(in_channels, in_channels, 3, 1, "same"), eps=1e-4),
-                nn.ReLU(inplace=True),
+                nn.LeakyReLU(0.2), #nn.ReLU(inplace=True),
                 spectral_norm(nn.Conv3d(in_channels, out_channels, 3, 1, "same"), eps=1e-4),
                 Scaling
                 )

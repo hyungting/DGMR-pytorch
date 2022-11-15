@@ -27,14 +27,15 @@ class GBlockCell(nn.Module):
         ):
         super(GBlockCell, self).__init__()
         Scaling = (nn.Upsample if upsample else Identity)
+        ReLU = nn.LeakyReLU(0.2)
         
         self.conv3x3 = nn.Sequential(
                 nn.BatchNorm2d(in_channels),
-                nn.ReLU(inplace=True),
+                ReLU, #nn.ReLU(inplace=True),
                 Scaling(scale_factor=2),
                 spectral_norm(nn.Conv2d(in_channels, in_channels, 3, 1, 1, bias=False), eps=1e-4),
                 nn.BatchNorm2d(in_channels),
-                nn.ReLU(inplace=True),
+                ReLU, #nn.ReLU(inplace=True),
                 spectral_norm(nn.Conv2d(in_channels, out_channels, 3, 1, 1), eps=1e-4)
                 )
         self.conv1x1 = nn.Sequential(
@@ -89,9 +90,10 @@ class LastGBlock(nn.Module):
         self.conv = spectral_norm(nn.Conv2d(in_channels, in_channels, 1, 1, 0, bias=False), eps=1e-4)
         self.g_block = GBlockCell(in_channels, in_channels, upsample=False)
         self.g_block_up = GBlockCell(in_channels, in_channels, upsample=True)
+        ReLU = nn.LeakyReLU(0.2)
         self.conv_out = nn.Sequential(
                 nn.BatchNorm2d(in_channels),
-                nn.ReLU(inplace=True),
+                ReLU,#nn.ReLU(inplace=True),
                 spectral_norm(nn.Conv2d(in_channels, 4, 1, 1, 0), eps=1e-4)
                 )
 

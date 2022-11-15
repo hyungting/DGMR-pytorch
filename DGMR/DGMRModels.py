@@ -107,7 +107,6 @@ class DGMRGenerator(nn.Module):
 
         ##### sampler #####
         outputs = []
-        noises = []
         for t in range(self.out_step):
             noise = self.latent_conv[t](torch.randn((B, 8, H//32, W//32)).to(x0.device))
 
@@ -125,14 +124,14 @@ class DGMRGenerator(nn.Module):
             if self.debug: print(f"4th GRU: {x0.shape}")
             g = self.g_block3[t](x0) 
             outputs.append(g)
-            noises.append(noise.detach().cpu().numpy()[0])
+            #noises.append(noise.detach().cpu().numpy()[0])
 
         outputs = torch.cat(outputs, dim=1)
         if self.debug: print(f"outputs: {outputs.shape}")
-        if return_noise:
-            return outputs, noises
-        else:
-            return outputs
+        #if return_noise:
+        #    return outputs, noises
+        #else:
+        return outputs
 
 class SpatialDiscriminator(nn.Module):
     def __init__(
@@ -157,7 +156,7 @@ class SpatialDiscriminator(nn.Module):
                 nn.BatchNorm1d(768),
                 spectral_norm(nn.Linear(768, 1))
                 )
-        self.relu = nn.ReLU()
+        self.relu = nn.LeakyReLU(0.2)
 
     def forward(self, x):
         x = x.unsqueeze(2)
@@ -217,7 +216,7 @@ class TemporalDiscriminator(nn.Module):
                 nn.BatchNorm1d(768),
                 spectral_norm(nn.Linear(768, 1))
                 )
-        self.relu = nn.ReLU()
+        self.relu = nn.LeakyReLU(0.2)
 
     def forward(self, x):
         x = random_crop(x, size=self.crop_size).to(x.device)
